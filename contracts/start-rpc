@@ -1,0 +1,37 @@
+#!/bin/bash
+
+BLOCKCHAIN_PATH="${HOME}/.blockchain"
+
+ACCOUNTS=( \
+    "0x128e638b653b71cf72ed68466f36b72d744a83f42e8050f9f46ba900bac03f6f,1000000000000000000000000000" \
+    "0xabb13f92ea05323c3918985bb874e38bf5577c1d447f31bae5c4b158010c15c9,1000000000000000000000000000" \
+    "0x20939c981c67e1bf496d0294b98c1edb9a52f4cc62fbc6e848b9db26719cbca1,1000000000000000000000000000" \
+)
+
+GANACHE_ARGS=""
+
+if [ -n "$BLOCKCHAIN_PATH" -a -z "$NO_STORE" ]
+then
+    if [ ! -d "$BLOCKCHAIN_PATH" ]
+    then
+        echo -n "Creating $BLOCKCHAIN_PATH ... "
+        if mkdir -p "$BLOCKCHAIN_PATH"
+        then
+            echo "OK"
+        else
+            echo "FAIL"
+            exit 1
+        fi
+    fi
+
+    GANACHE_ARGS="${GANACHE_ARGS} --db=$BLOCKCHAIN_PATH"
+fi
+
+for ACCOUNT in ${ACCOUNTS[*]}
+do
+    GANACHE_ARGS="${GANACHE_ARGS} --account=${ACCOUNT}"
+done
+
+#echo \
+/usr/bin/ganache-cli $GANACHE_ARGS 
+

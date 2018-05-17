@@ -12,6 +12,7 @@ contract WonoToken is ERC20Interface, Owned {
     string public  name;
     uint8 public decimals;
     uint public _totalSupply;
+    bool public transferUnlocked = false;
 
     mapping(address => uint) balances;
     mapping(address => mapping(address => uint)) allowed;
@@ -122,19 +123,34 @@ contract WonoToken is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Owner can create any amount of tokens from a thin air
     // ------------------------------------------------------------------------
-    function issue(uint tokens) public onlyOwner returns (bool success) {
+    function issue(uint tokens) public onlyOwner {
         balances[owner] += tokens;
         _totalSupply += tokens;
-        return true;
     }
     
     // ------------------------------------------------------------------------
     // Owner can destroy any amount of tokens from zero address balance
     // ------------------------------------------------------------------------
-    function sterilize(uint tokens) public onlyOwner returns (bool success) {
+    function sterilize(uint tokens) public onlyOwner {
         require(balances[address(0)] >= tokens);
         balances[address(0)] -= tokens;
         _totalSupply -= tokens;
-        return true;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Allow transfers
+    // ------------------------------------------------------------------------
+    function release() public onlyOwner {
+        transferUnlocked = true;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Give tokens
+    // ------------------------------------------------------------------------
+    function give(address recipient, uint tokens) public onlyOwner {
+        require(transferUnlocked);
+        require(balances[owner] >= tokens);
+        balances[recipient] += tokens;
+        balances[owner] -= tokens;
     }
 }
