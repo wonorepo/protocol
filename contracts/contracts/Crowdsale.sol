@@ -13,7 +13,7 @@ contract Crowdsale is BasicCrowdsale, Owned {
     
     uint basicPrice = 0.5 ether;
     uint etherPrice = 750 ether;
-    uint totalCollectedUSD = 0;
+    uint totalCollected = 0;
     
     uint[4] priceRange = [
         3e6,
@@ -32,9 +32,10 @@ contract Crowdsale is BasicCrowdsale, Owned {
     mapping(address => uint256) participants; // list of participants
     
     constructor (address _whitelistAddress, address _tokenAddress, address _fundingAddress) public BasicCrowdsale(msg.sender, msg.sender) {
-        basicPrice = 0.5 ether;
-        minimalGoal = 7000 ether;
-        hardCap = 20000 ether;
+        basicPrice = 0.5 ether;     // NOTE: Actually is USD
+        minimalGoal = 7000 ether;   // NOTE: Actually in USD
+        hardCap = 20000 ether;      // NOTE: Actually in USD
+        etherPrice = 700 ether;     // NOTE: Actually in USD
         
         crowdsaleToken = WonoToken(_tokenAddress);
         whitelist = Whitelist(_whitelistAddress);
@@ -47,44 +48,45 @@ contract Crowdsale is BasicCrowdsale, Owned {
     
     function () public payable {
         require(msg.value > 0);
-        participate(msg.value, msg.sender);
+        sell(msg.value, msg.sender);
     }
     
-    function participate(uint _value, address _recipient) internal hasBeenStarted() hasntStopped() whenCrowdsaleAlive() returns (uint) {
-        if (hardCap < totalCollected + _value) {
+    function sell(uint _value, address _recipient) internal hasBeenStarted() hasntStopped() whenCrowdsaleAlive() returns (uint) {
+        //require(whitelist.isApproved(_recipient);
+    
+        uint collected = _value * etherPrice;
+    
+        // Calculate change
+        if (hardCap < totalCollected + collected) {
             // Calculate change
-            uint change = _value + totalCollected - hardCap;
+            uint changeETH = (collected + totalCollected - hardCap) / etherPrice;
 
             // Give change back
-            _recipient.transfer(change);
-            _value = _value - change;
+            _recipient.transfer(changeETH);
+            _value = _value - changeETH;
         }
-        
-        // Calculate USD funded
-        uint collectedUSD = _value * etherPrice;
-        
-        
-        // Check price range
+
+
+        // Check if beyond single price range
         uint leftToSell = 0;
         for (uint8 i = 0; i < 4 && leftToSell == 0; ++i) {
-            if (totalCollectedUSD < priceRange[i] && priceRange[i] <= totalCollectedUSD + collectedUSD) {
-                uint chunk = (priceRange[i] - totalCollectedUSD) / etherPrice;
+            if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected + collected) {
+                uint chunk = (priceRange[i] - totalCollected) / etherPrice;
                 leftToSell = _value - chunk;
                 _value = chunk;
             }
         }
         
         // Sell tokens with current price
-        uint tokens = _value * price();
+        uint tokens = _value * etherPrice * price();
         crowdsaleToken.give(msg.sender, tokens);
         
         // Update counters
-        totalCollected += _value;
-        totalCollectedUSD += collectedUSD;
+        totalCollected += collected;
         
         // Sell rest amount with another price
         if (leftToSell > 0)
-            return _value + participate(leftToSell, _recipient);
+            return _value + sell(leftToSell, _recipient);
         else
             return _value;
         
@@ -97,9 +99,53 @@ contract Crowdsale is BasicCrowdsale, Owned {
     function price() internal view returns (uint) {
         uint _price = basicPrice / etherPrice / uint(10) ** crowdsaleToken.decimals();
         for (uint8 i = 0; i < 4; ++i) {
-            if (totalCollectedUSD < priceRange[i])
+            if (totalCollected < priceRange[i])
                 return discount[i] / 100 * _price;
         }
         return _price;
+    }
+    
+    function mintETHRewards(address forecasting, uint eth) public onlyManager()
+    {
+        
+    }
+    
+    function mintTokenRewards(address forecasting, uint tokens) public onlyManager()
+    {
+        crowdsaleToken.give(forecasting, tokens);
+    }
+    
+    function releaseTokens() public onlyManager() hasntStopped() whenCrowdsaleSuccessful()
+    {
+        crowdsaleToken.release();
+    }
+    
+    function stop() public onlyManager() hasntStopped()
+    {
+    
+    }
+    
+    function start(uint256 _startTimestamp, uint256 _endTimestamp, address _fundingAddress) 
+    {
+    
+    }
+    
+    function withdraw(uint eth) public onlyOwner() hasntStopped() whenCrowdsaleSuccessful() {
+        require(eth <= this.balance);
+        fundingAddress.transfer(eth);
+    }
+    
+    // backers refund their ETH if the crowdsale was cancelled or has failed
+    function refund() public {
+        // either cancelled or failed
+        require(stopped || isFailed());
+
+        uint amount = participants[msg.sender];
+
+        // prevent from doing it twice
+        require(amount > 0);
+        participants[msg.sender] = 0;
+
+        msg.sender.transfer(amount);
     }
 }

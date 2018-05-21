@@ -5,5 +5,4 @@ module.exports = async (deployer) => {
 
     await deployer.deploy(Token);
     const token = await Token.deployed();
-//    await token.allocate(creator, web3.toWei(47500000, 'ether'));
 }
