@@ -1,0 +1,1 @@
+web3.eth.getTransactionReceipt(web3.eth.sendTransaction({ nonce: web3.eth.getTransactionCount(web3.eth.accounts[0]), gasPrice: web3.toHex(web3.toWei('4', 'gwei')), gasLimit: 40000, from: web3.eth.accounts[0], to: web3.eth.accounts[1], value: web3.toWei(10) }));
