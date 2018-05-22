@@ -22,11 +22,11 @@ contract Crowdsale is BasicCrowdsale, Owned {
         9e6
     ];
     
-    uint8[4] discount = [
-        70,
-        75,
-        90,
-        95
+    uint8[4] bonus = [
+        130,
+        125,
+        110,
+        105
     ];
     
     mapping(address => uint256) participants; // list of participants
@@ -100,7 +100,7 @@ contract Crowdsale is BasicCrowdsale, Owned {
         uint _price = basicPrice / etherPrice / uint(10) ** crowdsaleToken.decimals();
         for (uint8 i = 0; i < 4; ++i) {
             if (totalCollected < priceRange[i])
-                return discount[i] / 100 * _price;
+                return bonus[i] / 100 * _price;
         }
         return _price;
     }
