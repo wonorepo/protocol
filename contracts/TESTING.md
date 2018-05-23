@@ -3,11 +3,11 @@
 ## Синопсис
 ```truffle exec scripts/send-eth.js```
 ## Запуск
-`./runweb3.sh` scripts/<*скрипт*>
+`./runweb3.sh` scripts/<*скрипт*>.js
 где:
 *скрипт* - имя скрипта.
 ## Скрипты
-### show-accounts.js
+### show-accounts
 Выводит список аккаунтов и их баланс.
 ```
 (0) 0x58bb9e15db607bcf3d1a9a78a5a71cb45adf18d5 999999959.67849809999999997
@@ -49,3 +49,9 @@
 (6) 0xd766d544f84fbd79986da19ae994652f095ddb2d false
 (7) 0xc6b6573da82565bb6bfe70486e7c80362b762502 false
 ```
+### update-ether-price
+Устанавливает курс USD/ETH.
+#### Аргументы
+*etherPrice* - курс USD/ETH округленный до ближайшего целого. uint8.
+
+
