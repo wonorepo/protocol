@@ -36,4 +36,16 @@
 ### add-to-whitelist
 Добавляет адреса аккаунтов `1`, `2`, `3`, `4` и `5`в `Whitelist`.
 ### remove-from-whitelist
-Удаляет адрес аккаунта `5` из `Whitelist`
+Удаляет адреса аккаунтов `1`, `2`, `3`, `4` и `5` из `Whitelist`.
+### check-whitelist
+Выводит список всех аккаунтов и их наличие в `Whitelist`.
+```
+(0) 0x58bb9e15db607bcf3d1a9a78a5a71cb45adf18d5 false
+(1) 0x77d2303f7ebb077c5a149ebd4095608ad5c94aad true
+(2) 0x664719842e5ffd0d74b558717dca244e41a0d2d0 true
+(3) 0x8dcf7e9b8106a8b2fb75f6061d94242cf036cc50 true
+(4) 0xee787b18ec4a584dd1f2d3eeb928949b76c8e374 true
+(5) 0xf7b11cc3ee8d670f5aeac722f40a1ad8b5438447 true
+(6) 0xd766d544f84fbd79986da19ae994652f095ddb2d false
+(7) 0xc6b6573da82565bb6bfe70486e7c80362b762502 false
+```
