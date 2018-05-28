@@ -1,88 +1,111 @@
 pragma solidity ^0.4.23;
 
 import "./SafeMath.sol";
-import "wings-integration/contracts/BasicCrowdsale.sol";
+import "../../externals/wings-integration/contracts/BasicCrowdsale.sol";
+//import "wings-integration/contracts/BasicCrowdsale.sol";
 import "./WonoToken.sol";
 import "./Whitelist.sol";
 
-contract Crowdsale is BasicCrowdsale, Owned {
+contract Crowdsale is BasicCrowdsale {
     using SafeMath for uint;
     
     WonoToken public crowdsaleToken;
     Whitelist public whitelist;
     
-    uint basicPrice = 0.5 ether;
-    uint etherPrice = 750 ether;
-    uint totalCollected = 0;
+    uint basicPrice;
+    uint etherPrice;
+    uint totalCollected;
     
-    uint[4] priceRange = [
-        3e6,
-        7e6,
+    uint[5] priceRange = [
+        1e6,
+        4e6,
         8e6,
-        9e6
+        9e6,
+        10e6
     ];
     
-    uint8[4] bonus = [
-        130,
-        125,
-        110,
-        105
+    uint8[5] bonus = [
+        70,
+        30,
+        25,
+        10,
+        5
     ];
     
     mapping(address => uint256) participants; // list of participants
+    mapping(address => uint256) bonusAmount; // amount of bonus tokens
     
+    // ------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------
     constructor (address _whitelistAddress, address _tokenAddress, address _fundingAddress) public BasicCrowdsale(msg.sender, msg.sender) {
         basicPrice = 0.5 ether;     // NOTE: Actually is USD
         minimalGoal = 7000 ether;   // NOTE: Actually in USD
         hardCap = 20000 ether;      // NOTE: Actually in USD
-        etherPrice = 700 ether;     // NOTE: Actually in USD
+        etherPrice = 500 ether;     // NOTE: Actually in USD
         
         crowdsaleToken = WonoToken(_tokenAddress);
         whitelist = Whitelist(_whitelistAddress);
         fundingAddress = _fundingAddress; // Where all Ether will be funded
     }
     
+    // ------------------------------------------------------------------------
+    // Various getters
+    // ------------------------------------------------------------------------
     function getToken() public returns(address) {
         return crowdsaleToken;
     }
     
+    function getWhitelist() public view returns(address) {
+        return whitelist;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Accept ETH
+    // ------------------------------------------------------------------------
     function () public payable {
         require(msg.value > 0);
         sell(msg.value, msg.sender);
     }
     
+    // ------------------------------------------------------------------------
+    // Token distribution method
+    // ------------------------------------------------------------------------
     function sell(uint _value, address _recipient) internal hasBeenStarted() hasntStopped() whenCrowdsaleAlive() returns (uint) {
         //require(whitelist.isApproved(_recipient);
     
-        uint collected = _value * etherPrice;
+        uint collected = _value.mul(etherPrice);   // Collected in USD
     
-        // Calculate change
-        if (hardCap < totalCollected + collected) {
+        // Calculate change in case of hitting hard cap
+        if (hardCap < totalCollected.add(collected)) {
             // Calculate change
-            uint changeETH = (collected + totalCollected - hardCap) / etherPrice;
+            uint change = (collected.add(totalCollected).sub(hardCap)).div(etherPrice); // Change in ETH
 
             // Give change back
-            _recipient.transfer(changeETH);
-            _value = _value - changeETH;
+            _recipient.transfer(change);
+            _value = _value.sub(change);    // Reduce _value by change
+            collected = _value.mul(etherPrice);   // Recalculate collected in USD in case of change
         }
 
 
         // Check if beyond single price range
-        uint leftToSell = 0;
-        for (uint8 i = 0; i < 4 && leftToSell == 0; ++i) {
-            if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected + collected) {
-                uint chunk = (priceRange[i] - totalCollected) / etherPrice;
-                leftToSell = _value - chunk;
+        uint leftToSell;
+        for (uint8 i = 0; i < 5 && leftToSell == 0; ++i) {  // Stop iterating if any single price range boundary hit
+            if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected.add(collected)) {
+                uint chunk = (priceRange[i].sub(totalCollected)).div(etherPrice);
+                leftToSell = _value.sub(chunk);
                 _value = chunk;
             }
         }
         
         // Sell tokens with current price
-        uint tokens = _value * etherPrice * price();
+        uint tokens = _value.div(price());
         crowdsaleToken.give(msg.sender, tokens);
         
         // Update counters
-        totalCollected += collected;
+        totalCollected = totalCollected.add(collected);
+        participants[msg.sender] = participants[msg.sender].add(_value);
+        bonusAmount[msg.sender] = bonusAmount[msg.sender].add(calculateBonus(_value));
         
         // Sell rest amount with another price
         if (leftToSell > 0)
@@ -92,17 +115,46 @@ contract Crowdsale is BasicCrowdsale, Owned {
         
     }
     
+    // ------------------------------------------------------------------------
+    // Calculate bonus
+    // ------------------------------------------------------------------------
+    function calculateBonus(uint _value) internal view returns(uint) {
+        uint collected = _value.mul(etherPrice);
+        for (uint8 i = 0; i < 5; ++i) {
+            if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected.add(collected)) {
+                return bonus[i];
+            }
+        }
+        return 0;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Get total bonus amount
+    // ------------------------------------------------------------------------
+    function getBonus() public view returns(uint) {
+        return bonusAmount[msg.sender];
+    }
+
+    // ------------------------------------------------------------------------
+    // Get bonus amount available
+    // ------------------------------------------------------------------------
+    function getBonusAvailable() public view returns(uint) {
+        return bonusAmount[msg.sender]; // FIXME recalculate with date
+    }
+
+    // ------------------------------------------------------------------------
+    // Update actual ETH price
+    // ------------------------------------------------------------------------
     function updateEtherPrice(uint usd) public onlyOwner {
         etherPrice = usd;
     }
     
+    
+    // ------------------------------------------------------------------------
+    // Calculates actual token price in ETH
+    // ------------------------------------------------------------------------
     function price() internal view returns (uint) {
-        uint _price = basicPrice / etherPrice / uint(10) ** crowdsaleToken.decimals();
-        for (uint8 i = 0; i < 4; ++i) {
-            if (totalCollected < priceRange[i])
-                return bonus[i] / 100 * _price;
-        }
-        return _price;
+        return basicPrice / etherPrice / uint(10) ** crowdsaleToken.decimals();
     }
     
     function mintETHRewards(address forecasting, uint eth) public onlyManager()
@@ -115,7 +167,7 @@ contract Crowdsale is BasicCrowdsale, Owned {
         crowdsaleToken.give(forecasting, tokens);
     }
     
-    function releaseTokens() public onlyManager() hasntStopped() whenCrowdsaleSuccessful()
+    function releaseTokens() public // onlyManager() hasntStopped() whenCrowdsaleSuccessful()
     {
         crowdsaleToken.release();
     }
@@ -125,13 +177,13 @@ contract Crowdsale is BasicCrowdsale, Owned {
     
     }
     
-    function start(uint256 _startTimestamp, uint256 _endTimestamp, address _fundingAddress) 
+    function start(uint256 _startTimestamp, uint256 _endTimestamp, address _fundingAddress) public onlyManager() hasntStopped()
     {
     
     }
     
     function withdraw(uint eth) public onlyOwner() hasntStopped() whenCrowdsaleSuccessful() {
-        require(eth <= this.balance);
+        require(eth <= address(this).balance);
         fundingAddress.transfer(eth);
     }
     

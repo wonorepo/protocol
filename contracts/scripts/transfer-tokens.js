@@ -11,7 +11,7 @@ module.exports = function(callback) {
             throw 'Bad or missing argument';
         const WonoToken = artifacts.require("WonoToken");
         const token = WonoToken.at('0x7a4471267b797428a6a51cc73fbc9397710f4572');
-        token.give(address, web3.toWei(parseFloat(process.argv[5]))).then((result) => {console.log(result);});
+        token.transfer(address, web3.toWei(parseFloat(process.argv[5]))).then((result) => {console.log(result);});
         callback();
     }
     catch(e) {

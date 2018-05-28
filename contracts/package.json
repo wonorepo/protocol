@@ -20,11 +20,12 @@
   },
   "homepage": "https://bitbucket.org/wonorepo/wono.io-protocol/src/dev/#readme",
   "devDependencies": {
-    "zeppelin-solidity": "~1.9.0",
+    "openzeppelin-solidity": "^1.9.0",
     "wings-integration": "~1.1.4",
     "truffle-contract": "^3.0.5"
   },
   "dependencies": {
-    "truffle": "^4.1.7"
+    "truffle": "^4.1.7",
+    "zeppelin-solidity": "^1.9.0"
   }
 }

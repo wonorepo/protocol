@@ -1,8 +1,8 @@
 pragma solidity ^0.4.23;
 
-import "./Owned.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract Whitelist is Owned {
+contract Whitelist is Ownable {
     event APPROVE(address indexed approved);
     event DECLINE(address indexed declined);
 

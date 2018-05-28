@@ -2,10 +2,10 @@ pragma solidity ^0.4.23;
 
 import "./ERC20Interface.sol";
 import "./SafeMath.sol";
-import "./Owned.sol";
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./ApproveAndCallFallBack.sol";
 
-contract WonoToken is ERC20Interface, Owned {
+contract WonoToken is ERC20Interface, Ownable {
     using SafeMath for uint;
 
     string public symbol;
@@ -25,7 +25,7 @@ contract WonoToken is ERC20Interface, Owned {
         name = "WONO Token";
         decimals = 18;
         transferUnlocked = false;
-        _totalSupply = uint(47500000) * uint(10) ** uint(decimals);
+        _totalSupply = uint(47500000).mul(uint(10) ** uint(decimals));
         balances[this] = _totalSupply;
     }
 
@@ -33,9 +33,22 @@ contract WonoToken is ERC20Interface, Owned {
     // Total supply
     // ------------------------------------------------------------------------
     function totalSupply() public constant returns (uint) {
-        return _totalSupply  - balances[address(0)];
+        return _totalSupply.sub(balances[address(0)]);
     }
 
+    // ------------------------------------------------------------------------
+    // Transfers allowed modifiers
+    // ------------------------------------------------------------------------
+    modifier transfersAllowed() {
+        require(transferUnlocked);
+        _;
+    }
+    
+    modifier transfersLocked() {
+        require(!transferUnlocked);
+        _;
+    }
+    
     // ------------------------------------------------------------------------
     // Get the token balance for account `tokenOwner`
     // ------------------------------------------------------------------------
@@ -48,11 +61,9 @@ contract WonoToken is ERC20Interface, Owned {
     // - Owner's account must have sufficient balance to transfer
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
-    function transfer(address to, uint tokens) public returns (bool success) {
-        require(transferUnlocked);
-        require(balances[msg.sender] >= tokens);
-        balances[msg.sender] -= tokens;
-        balances[to] += tokens;
+    function transfer(address to, uint tokens) public transfersAllowed returns (bool success) {
+        balances[msg.sender] = balances[msg.sender].sub(tokens);
+        balances[to] = balances[to].add(tokens);
         emit Transfer(msg.sender, to, tokens);
         return true;
     }
@@ -80,13 +91,12 @@ contract WonoToken is ERC20Interface, Owned {
     // - Spender must have sufficient allowance to transfer
     // - 0 value transfers are allowed
     // ------------------------------------------------------------------------
-    function transferFrom(address from, address to, uint tokens) public returns (bool success) {
-        require(transferUnlocked);
-        require(allowed[from][msg.sender] >= tokens);
-        require(balances[from] >= tokens);
-        allowed[from][msg.sender] -= tokens;
-        balances[from] -= tokens;
-        balances[to] += tokens;
+    function transferFrom(address from, address to, uint tokens) public transfersAllowed returns (bool success) {
+//        require(allowed[from][msg.sender] >= tokens);
+//        require(balances[from] >= tokens);
+        allowed[from][msg.sender] = allowed[from][msg.sender].sub(tokens);
+        balances[from] = balances[from].sub(tokens);
+        balances[to] = balances[to].add(tokens);
         emit Transfer(from, to, tokens);
         return true;
     }
@@ -128,19 +138,18 @@ contract WonoToken is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Owner can create any amount of tokens from a thin air
     // ------------------------------------------------------------------------
-    function issue(uint tokens) public onlyOwner {
+    function issue(uint tokens) public onlyOwner transfersLocked {
         require(!transferUnlocked);
-        balances[this] += tokens;
-        _totalSupply += tokens;
+        balances[this] = balances[this].add(tokens);
+        _totalSupply = _totalSupply.add(tokens);
     }
     
     // ------------------------------------------------------------------------
     // Owner can destroy any amount of tokens from zero address balance
     // ------------------------------------------------------------------------
     function sterilize(uint tokens) public onlyOwner {
-        require(balances[address(0)] >= tokens);
-        balances[address(0)] -= tokens;
-        _totalSupply -= tokens;
+        balances[address(0)] = balances[address(0)].sub(tokens);
+        _totalSupply = _totalSupply.sub(tokens);
     }
     
     // ------------------------------------------------------------------------
@@ -153,10 +162,8 @@ contract WonoToken is ERC20Interface, Owned {
     // ------------------------------------------------------------------------
     // Give tokens
     // ------------------------------------------------------------------------
-    function give(address recipient, uint tokens) public onlyOwner {
-        require(!transferUnlocked);
-        require(balances[this] >= tokens);
-        balances[this] -= tokens;
-        balances[recipient] += tokens;
+    function give(address recipient, uint tokens) public onlyOwner transfersLocked {
+        balances[this] = balances[this].sub(tokens);
+        balances[recipient] = balances[recipient].add(tokens);
     }
 }
