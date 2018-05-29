@@ -20,6 +20,7 @@ module.exports = function(callback) {
             nonce: web3.eth.getTransactionCount(from),
             from: from,
             to: to,
+            gas: 5000000,
             value: web3.toWei(parseFloat(process.argv[5]))
         };
         const tx = web3.eth.sendTransaction(txProps)

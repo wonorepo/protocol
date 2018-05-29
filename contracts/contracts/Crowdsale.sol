@@ -71,25 +71,27 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     // Token distribution method
     // ------------------------------------------------------------------------
-    function sell(uint _value, address _recipient) internal hasBeenStarted() hasntStopped() whenCrowdsaleAlive() returns (uint) {
-        //require(whitelist.isApproved(_recipient);
-    
-        uint collected = _value.mul(etherPrice);   // Collected in USD
+    function sell(uint _value, address _recipient) internal 
+    //hasBeenStarted() hasntStopped() whenCrowdsaleAlive()
+    returns (uint) {
+        require(whitelist.isApproved(_recipient));
+
+        uint collected = _value.mul(etherPrice.div(1 ether));   // Collected in USD
     
         // Calculate change in case of hitting hard cap
         if (hardCap < totalCollected.add(collected)) {
             // Calculate change
-            uint change = (collected.add(totalCollected).sub(hardCap)).div(etherPrice); // Change in ETH
+            uint change = (collected.add(totalCollected).sub(hardCap)).div(etherPrice.div(1 ether)); // Change in ETH
 
             // Give change back
             _recipient.transfer(change);
             _value = _value.sub(change);    // Reduce _value by change
-            collected = _value.mul(etherPrice);   // Recalculate collected in USD in case of change
+            collected = _value.mul(etherPrice.div(1 ether));   // Recalculate collected in USD in case of change
         }
-
 
         // Check if beyond single price range
         uint leftToSell;
+/*
         for (uint8 i = 0; i < 5 && leftToSell == 0; ++i) {  // Stop iterating if any single price range boundary hit
             if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected.add(collected)) {
                 uint chunk = (priceRange[i].sub(totalCollected)).div(etherPrice);
@@ -97,11 +99,11 @@ contract Crowdsale is BasicCrowdsale {
                 _value = chunk;
             }
         }
-        
+*/
         // Sell tokens with current price
-        uint tokens = _value.div(price());
+        uint tokens = _value.div(price()).mul(uint(10) ** crowdsaleToken.decimals());
         crowdsaleToken.give(msg.sender, tokens);
-        
+
         // Update counters
         totalCollected = totalCollected.add(collected);
         participants[msg.sender] = participants[msg.sender].add(_value);
@@ -146,7 +148,7 @@ contract Crowdsale is BasicCrowdsale {
     // Update actual ETH price
     // ------------------------------------------------------------------------
     function updateEtherPrice(uint usd) public onlyOwner {
-        etherPrice = usd;
+        etherPrice = usd.mul(1 ether);
     }
     
     
@@ -154,7 +156,7 @@ contract Crowdsale is BasicCrowdsale {
     // Calculates actual token price in ETH
     // ------------------------------------------------------------------------
     function price() internal view returns (uint) {
-        return basicPrice / etherPrice / uint(10) ** crowdsaleToken.decimals();
+        return basicPrice.div(etherPrice.div(1 ether));
     }
     
     function mintETHRewards(address forecasting, uint eth) public onlyManager()
