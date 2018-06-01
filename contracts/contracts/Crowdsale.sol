@@ -17,23 +17,27 @@ contract Crowdsale is BasicCrowdsale {
     uint totalCollected;
     
     uint[5] priceRange = [
-        1e6,
-        4e6,
-        8e6,
-        9e6,
-        10e6
+        1e24,
+        4e24,
+        8e24,
+        9e24,
+        10e24
     ];
     
-    uint8[5] bonus = [
+    uint8[6] bonus = [
         70,
         30,
         25,
         10,
-        5
+        5,
+        0
     ];
     
     mapping(address => uint256) participants; // list of participants
     mapping(address => uint256) bonusAmount; // amount of bonus tokens
+    
+    event PRICE_RANGE(uint8 idx);
+    event CHUNK(uint256 chunk);
     
     // ------------------------------------------------------------------------
     // Constructor
@@ -91,23 +95,29 @@ contract Crowdsale is BasicCrowdsale {
 
         // Check if beyond single price range
         uint leftToSell;
-/*
-        for (uint8 i = 0; i < 5 && leftToSell == 0; ++i) {  // Stop iterating if any single price range boundary hit
-            if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected.add(collected)) {
-                uint chunk = (priceRange[i].sub(totalCollected)).div(etherPrice);
+        uint8 priceRangeIdx;
+        for (priceRangeIdx = 0; priceRangeIdx < 5 && leftToSell == 0; ++priceRangeIdx) {  // Stop iterating if any single price range boundary hit
+            emit PRICE_RANGE(priceRangeIdx);
+            if (totalCollected < priceRange[priceRangeIdx] && priceRange[priceRangeIdx] <= totalCollected.add(collected)) {
+                uint chunk = (priceRange[priceRangeIdx].sub(totalCollected)).div(etherPrice.div(1 ether));  // Chunk in ETH
                 leftToSell = _value.sub(chunk);
                 _value = chunk;
+                emit CHUNK(chunk);
             }
         }
-*/
+
         // Sell tokens with current price
-        uint tokens = _value.div(price()).mul(uint(10) ** crowdsaleToken.decimals());
+        uint tokens = _value.div(price()).mul(1e18);
         crowdsaleToken.give(msg.sender, tokens);
 
+        // Give bonus
+        uint bonusTokens = tokens.mul(bonus[0]).div(100);
+        crowdsaleToken.give(address(this), bonusTokens);
+        
         // Update counters
         totalCollected = totalCollected.add(collected);
         participants[msg.sender] = participants[msg.sender].add(_value);
-        bonusAmount[msg.sender] = bonusAmount[msg.sender].add(calculateBonus(_value));
+        bonusAmount[msg.sender] = bonusAmount[msg.sender].add(bonusTokens);
         
         // Sell rest amount with another price
         if (leftToSell > 0)
@@ -116,20 +126,7 @@ contract Crowdsale is BasicCrowdsale {
             return _value;
         
     }
-    
-    // ------------------------------------------------------------------------
-    // Calculate bonus
-    // ------------------------------------------------------------------------
-    function calculateBonus(uint _value) internal view returns(uint) {
-        uint collected = _value.mul(etherPrice);
-        for (uint8 i = 0; i < 5; ++i) {
-            if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected.add(collected)) {
-                return bonus[i];
-            }
-        }
-        return 0;
-    }
-    
+       
     // ------------------------------------------------------------------------
     // Get total bonus amount
     // ------------------------------------------------------------------------
