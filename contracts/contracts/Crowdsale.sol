@@ -36,8 +36,8 @@ contract Crowdsale is BasicCrowdsale {
     mapping(address => uint256) participants; // list of participants
     mapping(address => uint256) bonusAmount; // amount of bonus tokens
     
-    event PRICE_RANGE(uint8 idx);
-    event CHUNK(uint256 chunk);
+    event PRICE_RANGE(uint collected, uint8 idx);
+    event CHUNK(uint chunk);
     
     // ------------------------------------------------------------------------
     // Constructor
@@ -97,7 +97,7 @@ contract Crowdsale is BasicCrowdsale {
         uint leftToSell;
         uint8 priceRangeIdx;
         for (priceRangeIdx = 0; priceRangeIdx < 5 && leftToSell == 0; ++priceRangeIdx) {  // Stop iterating if any single price range boundary hit
-            emit PRICE_RANGE(priceRangeIdx);
+            emit PRICE_RANGE(totalCollected, priceRangeIdx);
             if (totalCollected < priceRange[priceRangeIdx] && priceRange[priceRangeIdx] <= totalCollected.add(collected)) {
                 uint chunk = (priceRange[priceRangeIdx].sub(totalCollected)).div(etherPrice.div(1 ether));  // Chunk in ETH
                 leftToSell = _value.sub(chunk);

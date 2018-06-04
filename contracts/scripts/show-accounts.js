@@ -1,13 +1,8 @@
 module.exports = function(callback) {
     try {
-        console.log('');
-        web3.eth.getAccounts(
-            function(err, accounts) {
-                for (let i in accounts) {
-                    console.log(`(${i}) ${accounts[i]} ${web3.fromWei(web3.eth.getBalance(accounts[i]))}`);
-                }
-            }
-        );
+        for (let i in web3.eth.accounts) {
+            console.log(`(${i}) ${web3.eth.accounts[i]} ${web3.fromWei(web3.eth.getBalance(web3.eth.accounts[i]))}`);
+        }
         callback();
     }
     catch (e) {

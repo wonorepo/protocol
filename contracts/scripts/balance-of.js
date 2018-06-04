@@ -1,14 +1,14 @@
-module.exports = function(callback) {
+module.exports = async function(callback) {
     try {
         let address;
-        if (process.argv[4].match(/^0x[0-9A-Fa-f]{40}$/))
+        if (process.argv[4] != null && process.argv[4].match(/^0x[0-9A-Fa-f]{40}$/))
             address = process.argv[4];
-        else if (parseInt(process.argv[4], 10))
+        else if (!isNaN(parseInt(process.argv[4], 10)))
             address = web3.eth.accounts[parseInt(process.argv[4], 10)];
         else
             throw 'Bad or missing argument';
         const WonoToken = artifacts.require("WonoToken");
-        const token = WonoToken.at('0x7a4471267b797428a6a51cc73fbc9397710f4572');
+        const token = await WonoToken.deployed();
         token.balanceOf(address).then((result) => {console.log(web3.fromWei(result).toString());});
         callback();
     }

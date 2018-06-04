@@ -155,7 +155,8 @@ contract WonoToken is ERC20Interface, Ownable {
     // ------------------------------------------------------------------------
     // Allow transfers
     // ------------------------------------------------------------------------
-    function release() public onlyOwner {
+    function release() public // onlyOwner
+    {
         transferUnlocked = true;
     }
     
