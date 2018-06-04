@@ -44,9 +44,10 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     constructor (address _tokenAddress, address _whitelistAddress, address _fundingAddress) public BasicCrowdsale(msg.sender, msg.sender) {
         basicPrice = 0.5 ether;     // NOTE: Actually is USD
-        minimalGoal = 7000 ether;   // NOTE: Actually in USD
-        hardCap = 20000 ether;      // NOTE: Actually in USD
-        etherPrice = 500 ether;     // NOTE: Actually in USD
+        minimalGoal = 7000000 ether;   // NOTE: Actually in USD
+        hardCap = 20000000 ether;      // NOTE: Actually in USD
+        etherPrice = 1000 ether;     // NOTE: Actually in USD
+        totalCollected = 0;
 
         crowdsaleToken = WonoToken(_tokenAddress);
         whitelist = Whitelist(_whitelistAddress);
@@ -62,6 +63,10 @@ contract Crowdsale is BasicCrowdsale {
 
     function getWhitelist() public view returns(address) {
         return whitelist;
+    }
+    
+    function getTotalCollected() public view returns(uint) {
+        return totalCollected;
     }
 
     // ------------------------------------------------------------------------
@@ -95,14 +100,12 @@ contract Crowdsale is BasicCrowdsale {
 
         // Check if beyond single price range
         uint leftToSell;
-        uint8 priceRangeIdx = 5;
         for (uint8 i = 0; i < 5 && leftToSell == 0; ++i) {  // Stop iterating if any single price range boundary hit
             if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected.add(collected)) {
                 uint chunk = (priceRange[i].sub(totalCollected)).div(etherPrice.div(1 ether));  // Chunk in ETH
                 leftToSell = _value.sub(chunk);
                 _value = chunk;
-                priceRangeIdx = i;
-                emit CHUNK(chunk);
+                collected = _value.mul(etherPrice.div(1 ether));   // Recalculate collected in USD in case of chunking
             }
         }
 
@@ -111,8 +114,15 @@ contract Crowdsale is BasicCrowdsale {
         crowdsaleToken.give(_recipient, tokens);
 
         // Give bonus
-        uint bonusTokens = tokens.mul(bonus[priceRangeIdx]).div(100);
-        crowdsaleToken.give(address(this), bonusTokens);
+        uint bonusTokens = 0;
+        for (i = 0; i < 5 && bonusTokens == 0; ++i) {
+            if (totalCollected.add(collected) <= priceRange[i]) {
+                bonusTokens = tokens.mul(bonus[i]).div(100);
+                emit CHUNK(bonusTokens);
+            }
+        }
+        if (bonusTokens > 0)
+            crowdsaleToken.give(address(this), bonusTokens);
 
         // Update counters
         totalCollected = totalCollected.add(collected);
@@ -121,7 +131,7 @@ contract Crowdsale is BasicCrowdsale {
 
         // Sell rest amount with another price
         if (leftToSell > 0)
-            return _value + sell(leftToSell, _recipient);
+            return _value.add(sell(leftToSell, _recipient));
         else
             return _value;
 
