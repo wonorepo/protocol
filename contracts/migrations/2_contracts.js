@@ -9,7 +9,7 @@ module.exports = function(deployer, network, accounts) {
         return deployer.deploy(Whitelist)
     })
     .then(() => {
-        return deployer.deploy(Crowdsale, WonoToken.address, Whitelist.address, accounts[0]);
+        return deployer.deploy(Crowdsale, WonoToken.address, Whitelist.address);
     })
     .then(() => {
         console.log(`\x1b[36;1m${WonoToken.address}\x1b[0m`);

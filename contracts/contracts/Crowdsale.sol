@@ -13,7 +13,6 @@ contract Crowdsale is BasicCrowdsale {
 
     uint basicPrice;
     uint etherPrice;
-    uint totalCollected;
 
     uint[5] priceRange = [
         1e24,
@@ -32,16 +31,19 @@ contract Crowdsale is BasicCrowdsale {
         0
     ];
 
-    mapping(address => uint256) participants; // list of participants
-    mapping(address => uint256) bonusAmount; // amount of bonus tokens
+    struct Participant {
+        uint funded;
+        uint sold;
+        uint bonus;
+        uint claimed;
+    }
 
-    event PRICE_RANGE(uint collected, uint8 idx);
-    event CHUNK(uint chunk);
+    mapping(address => Participant) participants; // list of participants
 
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
-    constructor (address _tokenAddress, address _whitelistAddress, address _fundingAddress) public BasicCrowdsale(msg.sender, msg.sender) {
+    constructor (address _tokenAddress, address _whitelistAddress) public BasicCrowdsale(msg.sender, msg.sender) {
         basicPrice = 0.5 ether;     // NOTE: Actually is USD
         minimalGoal = 7000000 ether;   // NOTE: Actually in USD
         hardCap = 20000000 ether;      // NOTE: Actually in USD
@@ -50,22 +52,13 @@ contract Crowdsale is BasicCrowdsale {
 
         crowdsaleToken = WonoToken(_tokenAddress);
         whitelist = Whitelist(_whitelistAddress);
-        fundingAddress = _fundingAddress; // Where all Ether will be funded
     }
 
     // ------------------------------------------------------------------------
-    // Various getters
+    // Returns whitelist address
     // ------------------------------------------------------------------------
-    function getToken() public returns(address) {
-        return crowdsaleToken;
-    }
-
     function getWhitelist() public view returns(address) {
         return whitelist;
-    }
-    
-    function getTotalCollected() public view returns(uint) {
-        return totalCollected;
     }
 
     // ------------------------------------------------------------------------
@@ -110,6 +103,7 @@ contract Crowdsale is BasicCrowdsale {
 
         // Sell tokens with current price
         uint tokens = _value.div(price()).mul(1e18);
+        participants[_recipient].sold.add(tokens);
         crowdsaleToken.give(_recipient, tokens);
 
         // Give bonus
@@ -117,43 +111,70 @@ contract Crowdsale is BasicCrowdsale {
         for (i = 0; i < 5 && bonusTokens == 0; ++i) {
             if (totalCollected.add(collected) <= priceRange[i]) {
                 bonusTokens = tokens.mul(bonus[i]).div(100);
-                emit CHUNK(bonusTokens);
             }
         }
-        if (bonusTokens > 0)
+        if (bonusTokens > 0) {
+            participants[_recipient].bonus.add(bonusTokens);
             crowdsaleToken.give(address(this), bonusTokens);
+        }
 
         // Update counters
         totalCollected = totalCollected.add(collected);
-        participants[_recipient] = participants[_recipient].add(_value);
-        bonusAmount[_recipient] = bonusAmount[_recipient].add(bonusTokens);
+        participants[_recipient].funded = participants[_recipient].funded.add(_value);
 
         // Sell rest amount with another price
         if (leftToSell > 0)
             return _value.add(sell(leftToSell, _recipient));
         else
             return _value;
-
     }
 
     // ------------------------------------------------------------------------
-    // Get total bonus amount
+    // Get bonus amount for sender
     // ------------------------------------------------------------------------
     function getBonus() public view returns(uint) {
-        return bonusAmount[msg.sender];
+        return participants[msg.sender].bonus;
     }
 
     // ------------------------------------------------------------------------
-    // Get bonus amount available
+    // Get bonus amount available to withdrawal for sender
     // ------------------------------------------------------------------------
     function getBonusAvailable() public view returns(uint) {
-        return bonusAmount[msg.sender]; // FIXME recalculate with date
+        uint available = 0;
+        for (uint8 i = 0; i < 5; ++i)
+            // Each 60 days
+            if (block.timestamp >= endTimestamp.add(uint(86400).mul(60).mul(i)))
+                //add chunk equal to 15% of sold tokens
+                available.add(participants[msg.sender].sold.mul(15).div(100));
+
+        // Limit to whole bonus bunch
+        if (available > participants[msg.sender].bonus)
+            available = participants[msg.sender].bonus;
+
+        // Return value doesn't include claimed bonus
+        return available.sub(participants[msg.sender].claimed);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get bonus amount available to withdrawal for sender
+    // ------------------------------------------------------------------------
+    function getBonusClaimed() public view returns(uint) {
+        return participants[msg.sender].claimed;
+    }
+
+    // ------------------------------------------------------------------------
+    // Sends bonus
+    // ------------------------------------------------------------------------
+    function claimBonus(uint _value) public returns(bool) {
+        require(getBonusAvailable() >= _value);
+        participants[msg.sender].claimed = participants[msg.sender].claimed.add(_value);
+        crowdsaleToken.transfer(msg.sender, _value);
     }
 
     // ------------------------------------------------------------------------
     // Update actual ETH price
     // ------------------------------------------------------------------------
-    function updateEtherPrice(uint usd) public onlyOwner {
+    function updateEtherPrice(uint usd) public onlyManager {
         etherPrice = usd.mul(1 ether);
     }
 
@@ -164,47 +185,53 @@ contract Crowdsale is BasicCrowdsale {
         return basicPrice.div(etherPrice.div(1 ether));
     }
 
-    function mintETHRewards(address forecasting, uint eth) public onlyManager()
-    {
-        
+    // ------------------------------------------------------------------------
+    // Withdraws ETH funds to the funding address upon successful crowdsale
+    // ------------------------------------------------------------------------
+    function withdraw(uint _value) public onlyOwner() hasntStopped() whenCrowdsaleSuccessful() {
+        require(_value <= address(this).balance);
+        fundingAddress.transfer(_value);
     }
 
-    function mintTokenRewards(address forecasting, uint tokens) public onlyManager()
+    // ------------------------------------------------------------------------
+    // Backers refund their ETH if the crowdsale has been cancelled or failed
+    // ------------------------------------------------------------------------
+    function refund() public {
+        // Either cancelled or failed
+        require(stopped || isFailed());
+
+        uint amount = participants[msg.sender].funded;
+
+        // Prevent from doing it twice
+        require(amount > 0);
+        participants[msg.sender].funded = 0;
+
+        msg.sender.transfer(amount);
+    }
+
+    // ------------------------------------------------------------------------
+    // WINGS integration
+    // ------------------------------------------------------------------------
+    function getToken() public returns(address) {
+        return crowdsaleToken;
+    }
+
+    function deposit() public payable {
+        revert();
+    }
+
+    function mintETHRewards(address, uint) public onlyManager {
+        revert();
+    }
+
+    function mintTokenRewards(address forecasting, uint tokens) public onlyManager
     {
         crowdsaleToken.give(forecasting, tokens);
     }
 
-    function releaseTokens() public // onlyManager() hasntStopped() whenCrowdsaleSuccessful()
+    function releaseTokens() public onlyManager hasntStopped whenCrowdsaleSuccessful
     {
         crowdsaleToken.release();
     }
 
-    function stop() public onlyManager() hasntStopped()
-    {
-        
-    }
-
-    function start(uint256 _startTimestamp, uint256 _endTimestamp, address _fundingAddress) public onlyManager() hasntStopped()
-    {
-        
-    }
-
-    function withdraw(uint eth) public onlyOwner() hasntStopped() whenCrowdsaleSuccessful() {
-        require(eth <= address(this).balance);
-        fundingAddress.transfer(eth);
-    }
-
-    // backers refund their ETH if the crowdsale was cancelled or has failed
-    function refund() public {
-        // either cancelled or failed
-        require(stopped || isFailed());
-
-        uint amount = participants[msg.sender];
-
-        // prevent from doing it twice
-        require(amount > 0);
-        participants[msg.sender] = 0;
-
-        msg.sender.transfer(amount);
-    }
 }

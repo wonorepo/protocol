@@ -12,6 +12,10 @@ contract Whitelist is Ownable {
         owner = msg.sender;
     }
 
+    function () public payable {
+        revert();
+    }
+
     function addAddress(address _participant) public onlyOwner {
         require(!list[_participant]);
 

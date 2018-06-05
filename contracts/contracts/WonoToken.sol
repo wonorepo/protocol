@@ -83,7 +83,7 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
     // ------------------------------------------------------------------------
     // Allow transfers
     // ------------------------------------------------------------------------
-    function release() public // onlyOwner
+    function release() public onlyOwner
     {
         transferUnlocked = true;
     }
