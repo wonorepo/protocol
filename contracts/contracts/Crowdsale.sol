@@ -1,8 +1,7 @@
 pragma solidity ^0.4.23;
 
-import "./SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../../externals/wings-integration/contracts/BasicCrowdsale.sol";
-//import "wings-integration/contracts/BasicCrowdsale.sol";
 import "./WonoToken.sol";
 import "./Whitelist.sol";
 
