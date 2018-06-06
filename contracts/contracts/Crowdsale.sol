@@ -44,10 +44,10 @@ contract Crowdsale is BasicCrowdsale {
     // Constructor
     // ------------------------------------------------------------------------
     constructor (address _tokenAddress, address _whitelistAddress) public BasicCrowdsale(msg.sender, msg.sender) {
-        basicPrice = 0.5 ether;     // NOTE: Actually is USD
-        minimalGoal = 7000000 ether;   // NOTE: Actually in USD
-        hardCap = 20000000 ether;      // NOTE: Actually in USD
-        etherPrice = 1000 ether;     // NOTE: Actually in USD
+        basicPrice = 0.5 ether;         // NOTE: Actually is USD
+        minimalGoal = 8000000 ether;    // NOTE: Actually in USD
+        hardCap = 21000000 ether;       // NOTE: Actually in USD
+        etherPrice = 1000 ether;        // NOTE: Actually in USD
         totalCollected = 0;
 
         crowdsaleToken = WonoToken(_tokenAddress);

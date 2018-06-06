@@ -15,7 +15,7 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
     // ------------------------------------------------------------------------
     constructor() public DetailedERC20("WONO Token", "WONO", 18) {
         transferUnlocked = false;
-        totalSupply_ = uint(47500000).mul(uint(10) ** uint(decimals));
+        totalSupply_ = uint(79166667).mul(uint(10) ** uint(decimals));
         balances[this] = totalSupply_;
     }
 
