@@ -130,6 +130,13 @@ contract Crowdsale is BasicCrowdsale {
     }
 
     // ------------------------------------------------------------------------
+    // Get tokens bought by sender
+    // ------------------------------------------------------------------------
+    function getBought() public view returns(uint) {
+        return participants[msg.sender].sold;
+    }
+    
+    // ------------------------------------------------------------------------
     // Get bonus amount for sender
     // ------------------------------------------------------------------------
     function getBonus() public view returns(uint) {
@@ -154,9 +161,16 @@ contract Crowdsale is BasicCrowdsale {
         // Return value doesn't include claimed bonus
         return available.sub(participants[msg.sender].claimed);
     }
+    
+    // ------------------------------------------------------------------------
+    // Get bonus amount still locked
+    // ------------------------------------------------------------------------
+    function getBonusLocked() public view returns(uint) {
+        return getBonus() - getBonusAvailable() - getBonusClaimed();
+    }
 
     // ------------------------------------------------------------------------
-    // Get bonus amount available to withdrawal for sender
+    // Get bonus amount already claimed by sender
     // ------------------------------------------------------------------------
     function getBonusClaimed() public view returns(uint) {
         return participants[msg.sender].claimed;
