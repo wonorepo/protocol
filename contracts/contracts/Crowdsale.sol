@@ -4,15 +4,22 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../../externals/wings-integration/contracts/BasicCrowdsale.sol";
 import "./WonoToken.sol";
 import "./Whitelist.sol";
+import {l_Scenario} from "./Scenario.sol";
 
 contract Crowdsale is BasicCrowdsale {
     using SafeMath for uint;
 
     WonoToken public crowdsaleToken;
     Whitelist public whitelist;
+    
+    address tokenDistributionAddress;
+    
+    uint totalSold;
 
     uint basicPrice;
     uint etherPrice;
+
+    l_Scenario.Scenario public scenario;
 
     uint[5] priceRange = [
         1e24,
@@ -49,6 +56,7 @@ contract Crowdsale is BasicCrowdsale {
         hardCap = 21000000 ether;       // NOTE: Actually in USD
         etherPrice = 1000 ether;        // NOTE: Actually in USD
         totalCollected = 0;
+        totalSold = 0;
 
         crowdsaleToken = WonoToken(_tokenAddress);
         whitelist = Whitelist(_whitelistAddress);
@@ -73,7 +81,7 @@ contract Crowdsale is BasicCrowdsale {
     // Token distribution method
     // ------------------------------------------------------------------------
     function sell(uint _value, address _recipient) internal 
-    //hasBeenStarted() hasntStopped() whenCrowdsaleAlive()
+    //hasBeenStarted() hasntStopped() whenCrowdsaleAlive() // FIXME
     returns (uint) {
         require(whitelist.isApproved(_recipient));
 
@@ -121,6 +129,11 @@ contract Crowdsale is BasicCrowdsale {
         // Update counters
         totalCollected = totalCollected.add(collected);
         participants[_recipient].funded = participants[_recipient].funded.add(_value);
+        totalSold.add(tokens);
+        totalSold.add(bonusTokens);
+        
+        // Update token distribution scenario
+        updateScenario();
 
         // Sell rest amount with another price
         if (leftToSell > 0)
@@ -191,7 +204,7 @@ contract Crowdsale is BasicCrowdsale {
     function updateEtherPrice(uint usd) public onlyManager {
         etherPrice = usd.mul(1 ether);
     }
-
+    
     // ------------------------------------------------------------------------
     // Calculates actual token price in ETH
     // ------------------------------------------------------------------------
@@ -206,7 +219,35 @@ contract Crowdsale is BasicCrowdsale {
         require(_value <= address(this).balance);
         fundingAddress.transfer(_value);
     }
-
+    
+    // ------------------------------------------------------------------------
+    // Withdraw tokens for distribution
+    // ------------------------------------------------------------------------
+    function withdrawTokens() public onlyOwner() hasntStopped() whenCrowdsaleSuccessful() {
+        require(tokenDistributionAddress != 0x0);
+        
+        // Checking scenario
+        uint tokens;
+        if (scenario == l_Scenario.Scenario.SoftCap)
+            // See WP section 5.3
+            tokens = totalSold.div(72).mul(28);
+        else if (scenario == l_Scenario.Scenario.Moderate)
+            // See WP section 5.3
+            tokens = totalSold.div(68).mul(32);
+        else if (scenario == l_Scenario.Scenario.Average)
+            // See WP section 5.3
+            tokens = totalSold.div(64).mul(36);
+        else if (scenario == l_Scenario.Scenario.HardCap)
+            // See WP section 5.2
+            tokens = totalSold.div(60).mul(40);
+        else
+            // We've screwed up. Noone gets tokens. :(
+            tokens = 0;
+            
+        // Passing tokens for distribution
+        crowdsaleToken.give(tokenDistributionAddress, tokens);
+    }
+    
     // ------------------------------------------------------------------------
     // Backers refund their ETH if the crowdsale has been cancelled or failed
     // ------------------------------------------------------------------------
@@ -221,6 +262,29 @@ contract Crowdsale is BasicCrowdsale {
         participants[msg.sender].funded = 0;
 
         msg.sender.transfer(amount);
+    }
+    
+    // ------------------------------------------------------------------------
+    // Updates token distribution scenario
+    // ------------------------------------------------------------------------
+    function updateScenario() internal {
+        if (totalCollected >= 20E24)
+            scenario = l_Scenario.Scenario.HardCap;
+        else if (totalCollected >= 15E24)
+            scenario = l_Scenario.Scenario.Average;
+        else if (totalCollected >= 10E24)
+            scenario = l_Scenario.Scenario.Moderate;
+        else if (totalCollected >= 7E24)
+            scenario = l_Scenario.Scenario.SoftCap;
+        else
+            scenario = l_Scenario.Scenario.ScrewUp;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Sets token distribution adddress
+    // ------------------------------------------------------------------------
+    function setTokenDistributionAddreesss(address a) public onlyManager whenCrowdsaleAlive() {
+        tokenDistributionAddress = a;
     }
 
     // ------------------------------------------------------------------------
