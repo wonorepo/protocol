@@ -81,7 +81,7 @@ contract EtherDistributor is Ownable {
         l_Scenario.Scenario scenario = crowdsale.scenario();
         for (uint8 purpose = 0; purpose < 5; ++purpose)
             for (uint8 period = 0; period < 3; ++period)
-                accounts[purpose][period].Amount = scheme[uint8(scenario)][purpose][period];
+                accounts[purpose][period].Amount = scheme[uint8(scenario)][purpose][period].mul(crowdsale.totalCollected()).div(1E18);
     }
       
     // ------------------------------------------------------------------------
