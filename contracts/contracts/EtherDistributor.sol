@@ -121,6 +121,7 @@ contract EtherDistributor is Ownable {
     // Withdraws funds for specified purpose
     // ------------------------------------------------------------------------
     function withdraw(Purpose purpose, uint amount) public onlyOwner() {
+        require(distributionAddress[uint8(purpose)] != 0x0);
         uint8 currentPeriod = getPeriod();
         Account memory account;
         for (uint8 period = 0; period <= currentPeriod; ++period) {
