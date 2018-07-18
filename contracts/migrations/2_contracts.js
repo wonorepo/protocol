@@ -1,6 +1,8 @@
 var Whitelist = artifacts.require("./Whitelist.sol");
 var WonoToken = artifacts.require("./WonoToken.sol");
 var Crowdsale = artifacts.require("./Crowdsale.sol");
+var TokenDistributor = artifacts.require("./TokenDistributor.sol");
+var EtherDistributor = artifacts.require("./EtherDistributor.sol");
 
 module.exports = function(deployer, network, accounts) {
     deployer
@@ -12,10 +14,10 @@ module.exports = function(deployer, network, accounts) {
         return deployer.deploy(Crowdsale, WonoToken.address, Whitelist.address);
     })
     .then(() => {
-        return deployer.deploy(TokenDistributor);
+        return deployer.deploy(TokenDistributor, Crowdsale.address);
     })
     .then(() => {
-        return deployer.deploy(EtherDistributor);
+        return deployer.deploy(EtherDistributor, Crowdsale.address);
     })
     .then(() => {
         console.log(`\x1b[36;1m${WonoToken.address}\x1b[0m`);
