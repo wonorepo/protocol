@@ -80,9 +80,7 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     // Token distribution method
     // ------------------------------------------------------------------------
-    function sell(uint _value, address _recipient) internal 
-    //hasBeenStarted() hasntStopped() whenCrowdsaleAlive() // FIXME
-    returns (uint) {
+    function sell(uint _value, address _recipient) internal hasBeenStarted() hasntStopped() whenCrowdsaleAlive() returns (uint) {
         require(whitelist.isApproved(_recipient));
 
         uint collected = _value.mul(etherPrice.div(1 ether));   // Collected in USD

@@ -6,7 +6,7 @@ import "./Crowdsale.sol";
 import "./WonoToken.sol";
 import {l_Scenario} from "./Scenario.sol";
 
-contract EtherDistributor is Ownable {
+contract TokenDistributor is Ownable {
     using SafeMath for uint;
 
     Crowdsale crowdsale;
