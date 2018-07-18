@@ -1,11 +1,13 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
+contract WonoToken is ERC827Token, DetailedERC20, Ownable, MintableToken, BurnableToken  {
     using SafeMath for uint;
 
     bool public transferUnlocked;
@@ -17,6 +19,7 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
         transferUnlocked = false;
         totalSupply_ = uint(79166667).mul(uint(10) ** uint(decimals));
         balances[this] = totalSupply_;
+        emit Mint(this, totalSupply_);
     }
 
     // ------------------------------------------------------------------------
@@ -43,7 +46,6 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
         return super.transferFrom(_from, _to, _value);
     }
 
-
     function approve(address _spender, uint _value) public transfersAllowed returns (bool) {
         return super.approve(_spender, _value);
     }
@@ -67,9 +69,9 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
     // Owner can create any amount of tokens from a thin air
     // ------------------------------------------------------------------------
     function issue(uint tokens) public onlyOwner transfersLocked {
-        require(!transferUnlocked);
         balances[this] = balances[this].add(tokens);
         totalSupply_ = totalSupply_.add(tokens);
+        emit Mint(this, tokens);
     }
 
     // ------------------------------------------------------------------------
@@ -78,6 +80,7 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
     function sterilize(uint tokens) public onlyOwner {
         balances[address(0)] = balances[address(0)].sub(tokens);
         totalSupply_ = totalSupply_.sub(tokens);
+        emit Burn(address(0), tokens);
     }
 
     // ------------------------------------------------------------------------
@@ -94,5 +97,6 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable  {
     function give(address _to, uint _value) public onlyOwner transfersLocked {
         balances[this] = balances[this].sub(_value);
         balances[_to] = balances[_to].add(_value);
+        emit Transfer(this, _to, _value);
     }
 }
