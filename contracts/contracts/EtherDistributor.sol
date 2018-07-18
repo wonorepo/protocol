@@ -3,14 +3,12 @@ pragma solidity ^0.4.23;
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./Crowdsale.sol";
-import "./WonoToken.sol";
 import {l_Scenario} from "./Scenario.sol";
 
 contract EtherDistributor is Ownable {
     using SafeMath for uint;
 
     Crowdsale crowdsale;
-    WonoToken crowdsaleToken;
 
     bool full;
     
@@ -30,15 +28,14 @@ contract EtherDistributor is Ownable {
         uint Claimed;
     }
     
-    Account[5][3] accounts;
-    uint[5][5][3] scheme;
-    
+    Account[3][6] accounts;
+    uint[3][6][5] scheme;
+
     // ------------------------------------------------------------------------
     // Constructor
     // ------------------------------------------------------------------------
     constructor (address crowdsaleAddress) public {
         crowdsale = Crowdsale(crowdsaleAddress);
-        crowdsaleToken = WonoToken(crowdsale.getToken());
         full = false;
 
         createScheme();
@@ -50,33 +47,33 @@ contract EtherDistributor is Ownable {
     function createScheme() internal {
         //                                                                          2018            2019            2020
         // SoftCap scenario                                                         
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Engineering)] = [ 0.2200000E18,   0.2750000E18,   0.0550000E18 ];
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Marketing)  ] = [ 0.0314250E18,   0.1011750E18,   0.0174000E18 ];
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Legal)      ] = [ 0.0750000E18,   0.0450000E18,   0.0300000E18 ];
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Community)  ] = [ 0.0200000E18,   0.0200000E18,   0.0100000E18 ];
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Engineering)] = [ 0.2200000E8,    0.2750000E8,    0.0550000E8  ];
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Marketing)  ] = [ 0.0314250E8,    0.1011750E8,    0.0174000E8  ];
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Business)   ] = [ 0.0400000E8,    0.0400000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Legal)      ] = [ 0.0750000E8,    0.0450000E8,    0.0300000E8  ];
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Community)  ] = [ 0.0200000E8,    0.0200000E8,    0.0100000E8  ];
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Advisors)   ] = [ 0,              0,              0            ];
         // Moderate scenario
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Engineering)] = [ 0.2000000E18,   0.2250000E18,   0.0750000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Marketing)  ] = [ 0.0460900E18,   0.1483900E18,   0.0255200E18 ];
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Legal)      ] = [ 0.0650000E18,   0.0390000E18,   0.0260000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Community)  ] = [ 0.0200000E18,   0.0200000E18,   0.0100000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Engineering)] = [ 0.2000000E8,    0.2250000E8,    0.0750000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Marketing)  ] = [ 0.0460900E8,    0.1483900E8,    0.0255200E8  ];
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Business)   ] = [ 0.0400000E8,    0.0400000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Legal)      ] = [ 0.0650000E8,    0.0390000E8,    0.0260000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Community)  ] = [ 0.0200000E8,    0.0200000E8,    0.0100000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Advisors)   ] = [ 0,              0,              0            ];
         // Average scenario
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Engineering)] = [ 0.1575000E18,   0.2025000E18,   0.0900000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Marketing)  ] = [ 0.0527500E18,   0.1682500E18,   0.0290000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Legal)      ] = [ 0.0500000E18,   0.0300000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Community)  ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Engineering)] = [ 0.1575000E8,    0.2025000E8,    0.0900000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Marketing)  ] = [ 0.0527500E8,    0.1682500E8,    0.0290000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Business)   ] = [ 0.0400000E8,    0.0400000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Legal)      ] = [ 0.0500000E8,    0.0300000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Community)  ] = [ 0.0400000E8,    0.0400000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Advisors)   ] = [ 0,              0,              0            ];
         // HardCap scenario
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Engineering)] = [ 0.1200000E18,   0.1600000E18,   0.1200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Marketing)  ] = [ 0.0637125E18,   0.2014875E18,   0.0348000E18 ];
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Legal)      ] = [ 0.0500000E18,   0.0300000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Community)  ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Engineering)] = [ 0.1200000E8,    0.1600000E8,    0.1200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Marketing)  ] = [ 0.0637125E8,    0.2014875E8,    0.0348000E8  ];
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Business)   ] = [ 0.0400000E8,    0.0400000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Legal)      ] = [ 0.0500000E8,    0.0300000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Community)  ] = [ 0.0400000E8,    0.0400000E8,    0.0200000E8  ];
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Advisors)   ] = [ 0,              0,              0            ];
     }
     
     // ------------------------------------------------------------------------
@@ -86,7 +83,7 @@ contract EtherDistributor is Ownable {
         l_Scenario.Scenario scenario = crowdsale.scenario();
         for (uint8 purpose = 0; purpose < 5; ++purpose)
             for (uint8 period = 0; period < 3; ++period)
-                accounts[purpose][period].Amount = scheme[uint8(scenario)][purpose][period].mul(crowdsale.totalCollected()).div(1E18);
+                accounts[purpose][period].Amount = scheme[uint8(scenario)][purpose][period].mul(crowdsale.totalCollected()).div(1E8);
     }
       
     // ------------------------------------------------------------------------

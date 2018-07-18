@@ -31,7 +31,7 @@ contract TokenDistributor is Ownable {
     }
     
     Account[8] accounts;
-    uint[5][8] scheme;
+    uint[8][5] scheme;
     
     // ------------------------------------------------------------------------
     // Constructor
@@ -39,6 +39,8 @@ contract TokenDistributor is Ownable {
     constructor (address crowdsaleAddress) public {
         crowdsale = Crowdsale(crowdsaleAddress);
         crowdsaleToken = WonoToken(crowdsale.getToken());
+        
+        createScheme();
     }
 
     // ------------------------------------------------------------------------
@@ -46,41 +48,41 @@ contract TokenDistributor is Ownable {
     // ------------------------------------------------------------------------
     function createScheme() internal {
         // SoftCap scenario                                                         
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Owners)     ] = 0.06E18;
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Others)     ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Developers) ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Marketing)  ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Business)   ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Advisors)   ] = 0.05E18;
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Bounty)     ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Owners)     ] = 0.06E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Developers) ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Marketing)  ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Business)   ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Advisors)   ] = 0.05E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Bounty)     ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Reserve)    ] = 0;
         // Moderate scenario
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Owners)     ] = 0.06E18;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Others)     ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Developers) ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Marketing)  ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Business)   ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Advisors)   ] = 0.05E18;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Bounty)     ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Reserve)    ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Owners)     ] = 0.06E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Developers) ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Marketing)  ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Business)   ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Advisors)   ] = 0.05E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Bounty)     ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Reserve)    ] = 0.04E8;
         // Average scenario
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Owners)     ] = 0.06E18;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Others)     ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Developers) ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Marketing)  ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Business)   ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Advisors)   ] = 0.05E18;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Bounty)     ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Reserve)    ] = 0.08E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Owners)     ] = 0.06E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Developers) ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Marketing)  ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Business)   ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Advisors)   ] = 0.05E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Bounty)     ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Reserve)    ] = 0.08E8;
         // HardCap scenario
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Owners)     ] = 0.06E18;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Others)     ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Developers) ] = 0.04E18;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Marketing)  ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Business)   ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Advisors)   ] = 0.05E18;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Bounty)     ] = 0.03E18;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Reserve)    ] = 0.12E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Owners)     ] = 0.06E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Developers) ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Marketing)  ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Business)   ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Advisors)   ] = 0.05E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Bounty)     ] = 0.03E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Reserve)    ] = 0.12E8;
     }
 
     // ------------------------------------------------------------------------
@@ -89,7 +91,7 @@ contract TokenDistributor is Ownable {
     function distribute() public onlyOwner() {
         l_Scenario.Scenario scenario = crowdsale.scenario();
         for (uint8 purpose = 0; purpose < 8; ++purpose)
-            accounts[purpose].Amount = scheme[uint8(scenario)][purpose].mul(crowdsale.totalSold()).div(1E18);
+            accounts[purpose].Amount = scheme[uint8(scenario)][purpose].mul(crowdsale.totalSold()).div(1E8);
     }
     
     // ------------------------------------------------------------------------
