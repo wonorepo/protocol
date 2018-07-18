@@ -19,7 +19,8 @@ contract EtherDistributor is Ownable {
         Marketing,
         Business,
         Legal,
-        Community
+        Community,
+        Advisors
     }
       
     address[5] distributionAddress;
@@ -54,24 +55,28 @@ contract EtherDistributor is Ownable {
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Legal)      ] = [ 0.0750000E18,   0.0450000E18,   0.0300000E18 ];
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Community)  ] = [ 0.0200000E18,   0.0200000E18,   0.0100000E18 ];
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
         // Moderate scenario
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Engineering)] = [ 0.2000000E18,   0.2250000E18,   0.0750000E18 ];
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Marketing)  ] = [ 0.0460900E18,   0.1483900E18,   0.0255200E18 ];
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Legal)      ] = [ 0.0650000E18,   0.0390000E18,   0.0260000E18 ];
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Community)  ] = [ 0.0200000E18,   0.0200000E18,   0.0100000E18 ];
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
         // Average scenario
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Engineering)] = [ 0.1575000E18,   0.2025000E18,   0.0900000E18 ];
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Marketing)  ] = [ 0.0527500E18,   0.1682500E18,   0.0290000E18 ];
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Legal)      ] = [ 0.0500000E18,   0.0300000E18,   0.0200000E18 ];
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Community)  ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
         // HardCap scenario
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Engineering)] = [ 0.1200000E18,   0.1600000E18,   0.1200000E18 ];
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Marketing)  ] = [ 0.0637125E18,   0.2014875E18,   0.0348000E18 ];
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Business)   ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Legal)      ] = [ 0.0500000E18,   0.0300000E18,   0.0200000E18 ];
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Community)  ] = [ 0.0400000E18,   0.0400000E18,   0.0200000E18 ];
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Advisors)   ] = [ 0.0000000E18,   0.0000000E18,   0.0000000E18 ];
     }
     
     // ------------------------------------------------------------------------
@@ -115,9 +120,9 @@ contract EtherDistributor is Ownable {
     // ------------------------------------------------------------------------
     // Withdraws funds for specified purpose
     // ------------------------------------------------------------------------
-    function withdraw(Purpose purpose, uint amount) {
+    function withdraw(Purpose purpose, uint amount) public onlyOwner() {
         uint8 currentPeriod = getPeriod();
-        Account account;
+        Account memory account;
         for (uint8 period = 0; period <= currentPeriod; ++period) {
             account.Amount.add(accounts[uint8(purpose)][period].Amount);
             account.Claimed.add(accounts[uint8(purpose)][period].Claimed);
@@ -136,7 +141,7 @@ contract EtherDistributor is Ownable {
     // ------------------------------------------------------------------------
     function getAvailable(Purpose purpose) public view returns(uint) {
         uint8 currentPeriod = getPeriod();
-        Account account;
+        Account memory account;
         for (uint8 period = 0; period <= currentPeriod; ++period) {
             account.Amount.add(accounts[uint8(purpose)][period].Amount);
             account.Claimed.add(accounts[uint8(purpose)][period].Claimed);

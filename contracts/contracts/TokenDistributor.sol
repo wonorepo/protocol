@@ -12,7 +12,26 @@ contract EtherDistributor is Ownable {
     Crowdsale crowdsale;
     WonoToken crowdsaleToken;
 
+    enum Purpose {
+        Owners,
+        Others,
+        Developers,
+        Marketing,
+        Business,
+        Advisors,
+        Bounty,
+        Reserve
+    }
+    
     address[4] distributionAddress;
+    
+    struct Account {
+        uint Amount;
+        uint Claimed;
+    }
+    
+    Account[8] accounts;
+    uint[5][8] scheme;
     
     // ------------------------------------------------------------------------
     // Constructor
@@ -20,6 +39,57 @@ contract EtherDistributor is Ownable {
     constructor (address crowdsaleAddress) public {
         crowdsale = Crowdsale(crowdsaleAddress);
         crowdsaleToken = WonoToken(crowdsale.getToken());
+    }
+
+    // ------------------------------------------------------------------------
+    // Filling distribution scheme
+    // ------------------------------------------------------------------------
+    function createScheme() internal {
+        // SoftCap scenario                                                         
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Owners)     ] = 0.06E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Others)     ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Developers) ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Marketing)  ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Business)   ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Advisors)   ] = 0.05E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Bounty)     ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Reserve)    ] = 0;
+        // Moderate scenario
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Owners)     ] = 0.06E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Others)     ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Developers) ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Marketing)  ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Business)   ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Advisors)   ] = 0.05E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Bounty)     ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Reserve)    ] = 0.04E18;
+        // Average scenario
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Owners)     ] = 0.06E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Others)     ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Developers) ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Marketing)  ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Business)   ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Advisors)   ] = 0.05E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Bounty)     ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Reserve)    ] = 0.08E18;
+        // HardCap scenario
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Owners)     ] = 0.06E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Others)     ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Developers) ] = 0.04E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Marketing)  ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Business)   ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Advisors)   ] = 0.05E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Bounty)     ] = 0.03E18;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Reserve)    ] = 0.12E18;
+    }
+
+    // ------------------------------------------------------------------------
+    // Distributing tokens
+    // ------------------------------------------------------------------------
+    function distribute() public onlyOwner() {
+        l_Scenario.Scenario scenario = crowdsale.scenario();
+        for (uint8 purpose = 0; purpose < 8; ++purpose)
+            accounts[purpose].Amount = scheme[uint8(scenario)][purpose].mul(crowdsale.totalSold()).div(1E18);
     }
     
     // ------------------------------------------------------------------------
@@ -32,39 +102,16 @@ contract EtherDistributor is Ownable {
     // ------------------------------------------------------------------------
     // Address setters
     // ------------------------------------------------------------------------
-    function setTeamAddress(address a) public onlyOwner() {
-        distributionAddress[0] = a;
-    }
-    
-    function setAdvisorAddress(address a) public onlyOwner() {
-        distributionAddress[1] = a;
-    }
-    
-    function setRewardsAddress(address a) public onlyOwner() {
-        distributionAddress[2] = a;
-    }
-    
-    function setReserveAddress(address a) public onlyOwner() {
-        distributionAddress[3] = a;
+    function setDistributionAddress(Purpose purpose, address a) public onlyOwner() {
+        distributionAddress[uint8(purpose)] = a;
     }
 
     // ------------------------------------------------------------------------
     // Winthdrawals
     // ------------------------------------------------------------------------
-    function teamWithdraw(uint tokens) {
-        
-    }
-    
-    function advisorWithdraw(uint tokens) {
-    
-    }
-    
-    function rewardWithdraw(uint tokens) {
-    
-    }
-    
-    function reserveWithdraw(uint tokens) {
-    
-    }
-    
+    function withdraw(Purpose purpose, uint tokens) public onlyOwner() {
+        require(tokens <= accounts[uint8(purpose)].Amount.sub(accounts[uint8(purpose)].Claimed));
+        accounts[uint8(purpose)].Claimed.add(tokens);
+        crowdsaleToken.transfer(distributionAddress[uint8(purpose)], tokens);
+    }  
 }
