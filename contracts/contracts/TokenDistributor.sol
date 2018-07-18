@@ -110,6 +110,7 @@ contract EtherDistributor is Ownable {
     // Winthdrawals
     // ------------------------------------------------------------------------
     function withdraw(Purpose purpose, uint tokens) public onlyOwner() {
+        require(distributionAddress[uint8(purpose)] != 0x0);
         require(tokens <= accounts[uint8(purpose)].Amount.sub(accounts[uint8(purpose)].Claimed));
         accounts[uint8(purpose)].Claimed.add(tokens);
         crowdsaleToken.transfer(distributionAddress[uint8(purpose)], tokens);
