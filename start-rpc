@@ -39,7 +39,7 @@ ACCOUNTS=( \
 
 )
 
-GANACHE_ARGS=""
+GANACHE_ARGS="-i 513"
 
 if [ -n "$BLOCKCHAIN_PATH" -a -z "$NO_STORE" ]
 then

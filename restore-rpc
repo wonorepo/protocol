@@ -1,0 +1,15 @@
+#!/bin/bash
+
+SNAPSHOT=$1
+
+if (-z "$SNAPSHOT")
+then
+    echo "Bad or missing argument" > /dev/stderr
+    exit 1
+fi
+
+rm -rf "${HOME}/.blockchain"
+pushd /
+tar -xvf "${HOME}/.blockchain-${SNAPSHOT}.tar"
+popd
+

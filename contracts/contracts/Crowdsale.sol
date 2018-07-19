@@ -127,8 +127,7 @@ contract Crowdsale is BasicCrowdsale {
         // Update counters
         totalCollected = totalCollected.add(collected);
         participants[_recipient].funded = participants[_recipient].funded.add(_value);
-        totalSold.add(tokens);
-        totalSold.add(bonusTokens);
+        totalSold = totalSold.add(tokens).add(bonusTokens);
         
         // Update token distribution scenario
         updateScenario();
@@ -213,9 +212,8 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     // Withdraws ETH funds to the funding address upon successful crowdsale
     // ------------------------------------------------------------------------
-    function withdraw(uint _value) public onlyOwner() hasntStopped() whenCrowdsaleSuccessful() {
-        require(_value <= address(this).balance);
-        fundingAddress.transfer(_value);
+    function withdraw() public onlyOwner() hasntStopped() whenCrowdsaleSuccessful() {
+        fundingAddress.transfer(address(this).balance);
     }
     
     // ------------------------------------------------------------------------
@@ -281,8 +279,15 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     // Sets token distribution adddress
     // ------------------------------------------------------------------------
-    function setTokenDistributionAddreesss(address a) public onlyManager whenCrowdsaleAlive() {
+    function setTokenDistributionAddress(address a) public onlyManager hasntStopped {
         tokenDistributionAddress = a;
+    }
+
+    // ------------------------------------------------------------------------
+    // Sets ether distribution adddress
+    // ------------------------------------------------------------------------
+    function setEtherDistributionAddress(address a) public onlyManager hasntStopped {
+        fundingAddress = a;
     }
 
     // ------------------------------------------------------------------------

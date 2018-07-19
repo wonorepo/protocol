@@ -79,7 +79,7 @@ contract EtherDistributor is Ownable {
     // ------------------------------------------------------------------------
     // Distributing Ether
     // ------------------------------------------------------------------------
-    function distribute() internal {
+    function distribute() public onlyOwner {
         l_Scenario.Scenario scenario = crowdsale.scenario();
         for (uint8 purpose = 0; purpose < 5; ++purpose)
             for (uint8 period = 0; period < 3; ++period)
@@ -91,8 +91,6 @@ contract EtherDistributor is Ownable {
     // ------------------------------------------------------------------------
     function () public payable {
         require(msg.sender == address(crowdsale));
-        full = true;
-        distribute();
     }
     
     // ------------------------------------------------------------------------
