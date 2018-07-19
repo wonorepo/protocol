@@ -16,5 +16,6 @@ truffle exec scripts/start-crowdsale.js $(($(date +%s) + 300)) $(date +%s --date
 truffle exec scripts/fastforward.js 3600
 truffle exec scripts/send-eth.js $CROWDSALE 20000 1
 truffle exec scripts/balance-of.js 1
+truffle exec scripts/fastforward.js $((86400 * 10))
 truffle exec scripts/send-eth.js $CROWDSALE 2000 1
 truffle exec scripts/balance-of.js 1
