@@ -1,0 +1,12 @@
+OK()
+{
+    echo -e "\e[0m[ \e[32;1mOK\e[0m ]"
+    exit 0
+}
+
+FAIL()
+{
+    echo -e "\e[0m[\e[31;1mFAIL\e[0m]"
+    exit 1
+}
+

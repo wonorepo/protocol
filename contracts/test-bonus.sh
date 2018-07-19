@@ -1,6 +1,7 @@
 #!/bin/sh
 
 . ./config
+. ./test-functions
 
 if ( ! truffle migrate --reset )
 then
@@ -15,5 +16,12 @@ truffle exec scripts/add-to-whitelist.js 1
 truffle exec scripts/start-crowdsale.js $(($(date +%s) + 300)) $(date +%s --date='next week') 10
 truffle exec scripts/fastforward.js 3600
 truffle exec scripts/send-eth.js $CROWDSALE 21000 1
-truffle exec scripts/balance-of.js 1
-truffle exec scripts/balance-of.js $CROWDSALE
+FIRST=$(truffle exec scripts/balance-of.js 1 | tail -n 1)
+SECOND=$(truffle exec scripts/balance-of.js $CROWDSALE | tail -n 1)
+
+if ((($FIRST==42000000)) && (($SECOND==5500000)))
+then
+    OK
+else
+    FAIL
+fi
