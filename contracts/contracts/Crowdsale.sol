@@ -145,7 +145,13 @@ contract Crowdsale is BasicCrowdsale {
     function getTotalSold() public view returns(uint) {
         return totalSold;
     }
-
+    
+    // ------------------------------------------------------------------------
+    // Get total amount of ether collected
+    // ------------------------------------------------------------------------
+    function getTotalCollected() public view returns(uint) {
+        return totalCollected;
+    }
     
     // ------------------------------------------------------------------------
     // Get tokens bought by sender
