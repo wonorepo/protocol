@@ -59,9 +59,16 @@ do
     echo ${BALANCE[$PURPOSE]}
 done
 
-# if ((($ETHDISTR==$ETHER)) && (($TOKEN==5500000)) && [ "$TOKDISTR" == "3.16667e+07" ])
-# then
-#     OK
-# else
-#     FAIL
-# fi
+if (   ((${BALANCE[0]}==2850000)) \
+    && ((${BALANCE[1]}==1900000)) \
+    && ((${BALANCE[2]}==1900000)) \
+    && ((${BALANCE[3]}==1425000)) \
+    && ((${BALANCE[4]}==1425000)) \
+    && ((${BALANCE[5]}==2375000)) \
+    && ((${BALANCE[6]}==1425000)) \
+    && ((${BALANCE[7]}==5700000)) )
+then
+    OK
+else
+    FAIL
+fi
