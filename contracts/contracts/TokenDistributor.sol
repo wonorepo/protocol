@@ -23,17 +23,15 @@ contract TokenDistributor is Ownable {
         Reserve
     }
     
-    address[8] public distributionAddress;
+    address[8] distributionAddress;
     
     struct Account {
         uint Amount;
         uint Claimed;
     }
     
-    Account[8] public accounts;
-    uint[8][5] public scheme;
-    
-    event DISTRIBUTED(uint8 scenario, uint8 purpose, uint amount);
+    Account[8] accounts;
+    uint[8][5] scheme;
     
     // ------------------------------------------------------------------------
     // Constructor
@@ -50,8 +48,8 @@ contract TokenDistributor is Ownable {
     // ------------------------------------------------------------------------
     function createScheme() internal {
         // SoftCap scenario                                                         
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Owners)     ] = 0.06E8;
-        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Owners)     ] = 0.08E8;
+        scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Others)     ] = 0.02E8;
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Developers) ] = 0.04E8;
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Marketing)  ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Business)   ] = 0.03E8;
@@ -59,8 +57,8 @@ contract TokenDistributor is Ownable {
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Bounty)     ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.SoftCap) ][uint8(Purpose.Reserve)    ] = 0;
         // Moderate scenario
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Owners)     ] = 0.06E8;
-        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Owners)     ] = 0.08E8;
+        scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Others)     ] = 0.02E8;
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Developers) ] = 0.04E8;
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Marketing)  ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Business)   ] = 0.03E8;
@@ -68,8 +66,8 @@ contract TokenDistributor is Ownable {
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Bounty)     ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.Moderate)][uint8(Purpose.Reserve)    ] = 0.04E8;
         // Average scenario
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Owners)     ] = 0.06E8;
-        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Owners)     ] = 0.08E8;
+        scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Others)     ] = 0.02E8;
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Developers) ] = 0.04E8;
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Marketing)  ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Business)   ] = 0.03E8;
@@ -77,8 +75,8 @@ contract TokenDistributor is Ownable {
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Bounty)     ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.Average) ][uint8(Purpose.Reserve)    ] = 0.08E8;
         // HardCap scenario
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Owners)     ] = 0.06E8;
-        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Others)     ] = 0.04E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Owners)     ] = 0.08E8;
+        scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Others)     ] = 0.02E8;
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Developers) ] = 0.04E8;
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Marketing)  ] = 0.03E8;
         scheme[uint8(l_Scenario.Scenario.HardCap) ][uint8(Purpose.Business)   ] = 0.03E8;
@@ -95,7 +93,6 @@ contract TokenDistributor is Ownable {
         uint totalSold = crowdsale.getTotalSold();
         for (uint8 purpose = 0; purpose < 8; purpose++) {
             accounts[purpose].Amount = scheme[uint8(scenario)][purpose].mul(totalSold).div(1E8);
-            emit DISTRIBUTED(uint8(scenario), purpose, accounts[purpose].Amount);
         }
     }
     
