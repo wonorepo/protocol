@@ -140,6 +140,14 @@ contract Crowdsale is BasicCrowdsale {
     }
 
     // ------------------------------------------------------------------------
+    // Get total amount of tokens sold
+    // ------------------------------------------------------------------------
+    function getTotalSold() public view returns(uint) {
+        return totalSold;
+    }
+
+    
+    // ------------------------------------------------------------------------
     // Get tokens bought by sender
     // ------------------------------------------------------------------------
     function getBought() public view returns(uint) {

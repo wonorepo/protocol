@@ -23,15 +23,17 @@ contract TokenDistributor is Ownable {
         Reserve
     }
     
-    address[4] distributionAddress;
+    address[8] public distributionAddress;
     
     struct Account {
         uint Amount;
         uint Claimed;
     }
     
-    Account[8] accounts;
-    uint[8][5] scheme;
+    Account[8] public accounts;
+    uint[8][5] public scheme;
+    
+    event DISTRIBUTED(uint8 scenario, uint8 purpose, uint amount);
     
     // ------------------------------------------------------------------------
     // Constructor
@@ -88,10 +90,13 @@ contract TokenDistributor is Ownable {
     // ------------------------------------------------------------------------
     // Distributing tokens
     // ------------------------------------------------------------------------
-    function distribute() public onlyOwner() {
+    function distribute() public {
         l_Scenario.Scenario scenario = crowdsale.scenario();
-        for (uint8 purpose = 0; purpose < 8; ++purpose)
-            accounts[purpose].Amount = scheme[uint8(scenario)][purpose].mul(crowdsale.totalSold()).div(1E8);
+        uint totalSold = crowdsale.getTotalSold();
+        for (uint8 purpose = 0; purpose < 8; purpose++) {
+            accounts[purpose].Amount = scheme[uint8(scenario)][purpose].mul(totalSold).div(1E8);
+            emit DISTRIBUTED(uint8(scenario), purpose, accounts[purpose].Amount);
+        }
     }
     
     // ------------------------------------------------------------------------
@@ -109,9 +114,30 @@ contract TokenDistributor is Ownable {
     }
 
     // ------------------------------------------------------------------------
+    // Returns amount distributed
+    // ------------------------------------------------------------------------
+    function getTokensTotal(Purpose purpose) public view returns (uint) {
+        return accounts[uint8(purpose)].Amount;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Returns amount claimed
+    // ------------------------------------------------------------------------
+    function getTokensClaimed(Purpose purpose) public view returns (uint) {
+        return accounts[uint8(purpose)].Claimed;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Returns amount available to withdrawal
+    // ------------------------------------------------------------------------
+    function getTokensAvailable(Purpose purpose) public view returns (uint) {
+        return accounts[uint8(purpose)].Amount.sub(accounts[uint8(purpose)].Claimed);
+    }
+    
+    // ------------------------------------------------------------------------
     // Winthdrawals
     // ------------------------------------------------------------------------
-    function withdraw(Purpose purpose, uint tokens) public onlyOwner() {
+    function withdraw(Purpose purpose, uint tokens) public {
         require(distributionAddress[uint8(purpose)] != 0x0);
         require(tokens <= accounts[uint8(purpose)].Amount.sub(accounts[uint8(purpose)].Claimed));
         accounts[uint8(purpose)].Claimed.add(tokens);
