@@ -15,6 +15,7 @@ contract Crowdsale is BasicCrowdsale {
     address tokenDistributionAddress;
     
     uint totalSold;
+    uint totalCollectedEth;
 
     uint basicPrice;
     uint etherPrice;
@@ -55,7 +56,8 @@ contract Crowdsale is BasicCrowdsale {
         minimalGoal = 8000000 ether;    // NOTE: Actually in USD
         hardCap = 21000000 ether;       // NOTE: Actually in USD
         etherPrice = 1000 ether;        // NOTE: Actually in USD
-        totalCollected = 0;
+        totalCollected = 0;             // NOTE: Actually in USD
+        totalCollectedEth = 0;
         totalSold = 0;
 
         crowdsaleToken = WonoToken(_tokenAddress);
@@ -75,6 +77,7 @@ contract Crowdsale is BasicCrowdsale {
     function () public payable {
         require(msg.value > 0);
         sell(msg.value, msg.sender);
+        totalCollectedEth = totalCollectedEth.add(msg.value);
     }
 
     // ------------------------------------------------------------------------
@@ -149,8 +152,8 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     // Get total amount of ether collected
     // ------------------------------------------------------------------------
-    function getTotalCollected() public view returns(uint) {
-        return totalCollected;
+    function getTotalCollectedEth() public view returns(uint) {
+        return totalCollectedEth;
     }
     
     // ------------------------------------------------------------------------

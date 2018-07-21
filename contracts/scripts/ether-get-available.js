@@ -5,16 +5,9 @@ module.exports = async function(callback) {
             purpose = parseInt(process.argv[4], 10);
         else
             throw 'Bad or missing argument';
-        let address;
-        if (process.argv[5] != null && process.argv[5].match(/^0x[0-9A-Fa-f]{40}$/))
-            address = process.argv[5];
-        else if (!isNaN(parseInt(process.argv[5], 10)))
-            address = web3.eth.accounts[parseInt(process.argv[5], 10)];
-        else
-            throw 'Bad or missing argument';
         const EtherDistributor = artifacts.require("EtherDistributor");
         const etherDistributor = await EtherDistributor.deployed();
-        etherDistributor.setDistributionAddress(purpose, address).then((result) => { console.log(result); });
+        etherDistributor.getEtherAvailable(purpose).then((result) => { console.log(web3.fromWei(result).toString()); });
         callback();
     }
     catch(e) {
