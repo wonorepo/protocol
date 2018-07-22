@@ -28,8 +28,6 @@ contract EtherDistributor is Ownable {
     
     Account[3][6] accounts;
     uint[3][6][5] scheme;
-
-    event WITHDRAW(uint indexed amount);
     
     // ------------------------------------------------------------------------
     // Constructor
@@ -162,7 +160,6 @@ contract EtherDistributor is Ownable {
             yetToSend = yetToSend.sub(chunk);
             amountToSend = amountToSend.add(chunk);
         }
-        emit WITHDRAW(amountToSend);
         distributionAddress[uint8(purpose)].transfer(amountToSend);
     }
 }
