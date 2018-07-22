@@ -1,3 +1,5 @@
+FAILED=false
+
 OK()
 {
     echo -e "\e[0m[ \e[32;1mOK\e[0m ]"
@@ -10,3 +12,35 @@ FAIL()
     exit 1
 }
 
+STEP_OK()
+{
+    echo -e "\e[0m[ \e[32;1mOK\e[0m ] $1"
+}
+
+STEP_FAIL()
+{
+    echo -e "\e[0m[\e[31;1mFAIL\e[0m] $1"
+    FAILED=true
+}
+
+STEP_CHECK()
+{
+    if (($? == 0))
+    then
+        STEP_OK "$1"
+    else
+        STEP_FAIL "$1"
+    fi
+}
+
+RESULT()
+{
+    if $FAILED
+    then
+        echo -e "\e[31;1mSome tests failed\e[0m"
+        exit 0
+    else
+        echo -e "\e[32;1mAll tests passed\e[0m"
+        exit 0
+    fi
+}
