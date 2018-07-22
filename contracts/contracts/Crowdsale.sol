@@ -281,13 +281,13 @@ contract Crowdsale is BasicCrowdsale {
     // Updates token distribution scenario
     // ------------------------------------------------------------------------
     function updateScenario() internal {
-        if (totalCollected >= 20E24)
+        if (totalCollected >= 21E24)
             scenario = l_Scenario.Scenario.HardCap;
-        else if (totalCollected >= 15E24)
+        else if (totalCollected >= 16E24)
             scenario = l_Scenario.Scenario.Average;
-        else if (totalCollected >= 10E24)
+        else if (totalCollected >= 11E24)
             scenario = l_Scenario.Scenario.Moderate;
-        else if (totalCollected >= 7E24)
+        else if (totalCollected >= 8E24)
             scenario = l_Scenario.Scenario.SoftCap;
         else
             scenario = l_Scenario.Scenario.ScrewUp;
