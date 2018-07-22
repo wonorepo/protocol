@@ -141,6 +141,13 @@ contract Crowdsale is BasicCrowdsale {
         else
             return _value;
     }
+    
+    // ------------------------------------------------------------------------
+    // Burn undistributed tokens
+    // ------------------------------------------------------------------------
+    function sterilize() public onlyManager {
+        crowdsaleToken.sterilize();
+    }
 
     // ------------------------------------------------------------------------
     // Get total amount of tokens sold

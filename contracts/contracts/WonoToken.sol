@@ -75,12 +75,12 @@ contract WonoToken is ERC827Token, DetailedERC20, Ownable, MintableToken, Burnab
     }
 
     // ------------------------------------------------------------------------
-    // Owner can destroy any amount of tokens from zero address balance
+    // Owner can destroy all undistributed tokens
     // ------------------------------------------------------------------------
-    function sterilize(uint tokens) public onlyOwner {
-        balances[address(0)] = balances[address(0)].sub(tokens);
-        totalSupply_ = totalSupply_.sub(tokens);
-        emit Burn(address(0), tokens);
+    function sterilize() public onlyOwner {
+        totalSupply_ = totalSupply_.sub(balances[this]);
+        emit Burn(address(this), balances[this]);
+        balances[this] = 0;
     }
 
     // ------------------------------------------------------------------------
