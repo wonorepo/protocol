@@ -53,7 +53,7 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     constructor (address _tokenAddress, address _whitelistAddress) public BasicCrowdsale(msg.sender, msg.sender) {
         basicPrice = 0.5 ether;         // NOTE: Actually is USD
-        minimalGoal = 8000000 ether;    // NOTE: Actually in USD
+        minimalGoal = 6000000 ether;    // NOTE: Actually in USD
         hardCap = 21000000 ether;       // NOTE: Actually in USD
         etherPrice = 1000 ether;        // NOTE: Actually in USD
         totalCollected = 0;             // NOTE: Actually in USD
@@ -294,7 +294,7 @@ contract Crowdsale is BasicCrowdsale {
             scenario = l_Scenario.Scenario.Average;
         else if (totalCollected >= 11E24)
             scenario = l_Scenario.Scenario.Moderate;
-        else if (totalCollected >= 8E24)
+        else if (totalCollected >= 6E24)
             scenario = l_Scenario.Scenario.SoftCap;
         else
             scenario = l_Scenario.Scenario.ScrewUp;
