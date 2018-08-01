@@ -16,6 +16,7 @@ contract Crowdsale is BasicCrowdsale {
     
     uint totalSold;
     uint totalCollectedEth;
+    uint saftEth;
 
     uint basicPrice;
     uint etherPrice;
@@ -78,6 +79,14 @@ contract Crowdsale is BasicCrowdsale {
         require(msg.value > 0);
         sell(msg.value, msg.sender);
         totalCollectedEth = totalCollectedEth.add(msg.value);
+    }
+    
+    // ------------------------------------------------------------------------
+    // Register SAFT
+    // ------------------------------------------------------------------------
+    function registerSAFT(uint _value, address _recipient) public onlyOwner {
+        sell(_value, _recipient);
+        saftEth = saftEth.add(_value);
     }
 
     // ------------------------------------------------------------------------
@@ -161,6 +170,13 @@ contract Crowdsale is BasicCrowdsale {
     // ------------------------------------------------------------------------
     function getTotalCollectedEth() public view returns(uint) {
         return totalCollectedEth;
+    }
+    
+    // ------------------------------------------------------------------------
+    // Get ether eqivalent of SAFT
+    // ------------------------------------------------------------------------
+    function getSAFTEth() public view returns(uint) {
+        return saftEth;
     }
     
     // ------------------------------------------------------------------------
