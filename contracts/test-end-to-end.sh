@@ -14,10 +14,13 @@ STEP_CHECK Migration
 truffle exec scripts/change-ownership.js
 truffle exec scripts/update-ether-price.js 1000
 truffle exec scripts/add-to-whitelist.js 1
+truffle exec scripts/add-to-whitelist.js 9
 truffle exec scripts/start-crowdsale.js $(($(date +%s) + 300)) $(date +%s --date='next week') 10
 truffle exec scripts/set-token-distribution-address.js $TOKENDISTRIBUTOR
 truffle exec scripts/set-ether-distribution-address.js $ETHERDISTRIBUTOR
 truffle exec scripts/fastforward.js 3600
+echo "REG SAFT"
+truffle exec scripts/register-saft.js 9 1000
 truffle exec scripts/send-eth.js $CROWDSALE 12000 1
 truffle exec scripts/fastforward.js $((86400 * 10))
 
@@ -25,8 +28,9 @@ truffle exec scripts/fastforward.js $((86400 * 10))
 COLLECTED=$(truffle exec scripts/get-balance.js $CROWDSALE | tail -n 1)
 SOLD=$(truffle exec scripts/balance-of.js 1 | tail -n 1)
 BONUS=$(truffle exec scripts/balance-of.js $CROWDSALE | tail -n 1)
-echo $COLLECTED $SOLD $BONUS
-( (($COLLECTED == 12000)) && (($SOLD == 24000000)) && (($BONUS == 5500000)) )
+SAFT=$(truffle exec scripts/get-saft-eth.js | tail -n 1)
+echo $COLLECTED $SOLD $BONUS $SAFT
+( (($COLLECTED == 12000)) && (($SOLD == 24000000)) && (($BONUS == 5500000)) && (($SAFT == 1000)) )
 STEP_CHECK "ICO"
 
 # Check ICO funds withdrawal
@@ -37,7 +41,7 @@ truffle exec scripts/release-tokens.js
 ETHDISTR=$(truffle exec scripts/get-balance.js $ETHERDISTRIBUTOR | tail -n 1)
 TOKDISTR=$(truffle exec scripts/balance-of.js $TOKENDISTRIBUTOR | tail -n 1 | awk '{ print $1+0 }')
 echo $ETHDISTR $TOKDISTR
-( (($ETHDISTR == 12000)) && [[ "$TOKDISTR" == "1.38824e+07" ]] )
+( (($ETHDISTR == 12000)) && [[ "$TOKDISTR" == "1.48235e+07" ]] )
 STEP_CHECK "Widthdraw funds for distribution"
 
 # Distributing ether
@@ -64,14 +68,14 @@ do
     TOKAVAIL[$PURPOSE]=$(truffle exec scripts/token-get-available.js $PURPOSE | tail -n 1)
     echo ${TOKTOTAL[$PURPOSE]} ${TOKAVAIL[$PURPOSE]} 
 done
-(  ((${TOKTOTAL[0]} == 2360000)) && ((${TOKAVAIL[0]} == 354000 )) \
-&& ((${TOKTOTAL[1]} == 590000 )) && ((${TOKAVAIL[1]} == 590000 )) \
-&& ((${TOKTOTAL[2]} == 1180000)) && ((${TOKAVAIL[2]} == 177000 )) \
-&& ((${TOKTOTAL[3]} == 914500 )) && ((${TOKAVAIL[3]} == 147500 )) \
-&& ((${TOKTOTAL[4]} == 914500 )) && ((${TOKAVAIL[4]} == 147500 )) \
-&& ((${TOKTOTAL[5]} == 1475000)) && ((${TOKAVAIL[5]} == 1475000)) \
-&& ((${TOKTOTAL[6]} == 885000 )) && ((${TOKAVAIL[6]} == 885000 )) \
-&& ((${TOKTOTAL[7]} == 1180000)) && ((${TOKAVAIL[7]} == 1180000)) )
+(  ((${TOKTOTAL[0]} == 2520000)) && ((${TOKAVAIL[0]} == 378000 )) \
+&& ((${TOKTOTAL[1]} == 630000 )) && ((${TOKAVAIL[1]} == 630000 )) \
+&& ((${TOKTOTAL[2]} == 1260000)) && ((${TOKAVAIL[2]} == 189000 )) \
+&& ((${TOKTOTAL[3]} == 976500 )) && ((${TOKAVAIL[3]} == 157500 )) \
+&& ((${TOKTOTAL[4]} == 976500 )) && ((${TOKAVAIL[4]} == 157500 )) \
+&& ((${TOKTOTAL[5]} == 1575000)) && ((${TOKAVAIL[5]} == 1575000)) \
+&& ((${TOKTOTAL[6]} == 945000 )) && ((${TOKAVAIL[6]} == 945000 )) \
+&& ((${TOKTOTAL[7]} == 1260000)) && ((${TOKAVAIL[7]} == 1260000)) )
 STEP_CHECK "Token distribution (period 0)"
 
 # PoC delivery
@@ -88,7 +92,7 @@ STEP_CHECK "Ether distribution (period 1)"
 # Tokens period 1
 TOKAVAIL[0]=$(truffle exec scripts/token-get-available.js 0 | tail -n 1)
 echo ${TOKTOTAL[0]} ${TOKAVAIL[0]}
-((${TOKAVAIL[0]} == 944000))
+((${TOKAVAIL[0]} == 1008000))
 STEP_CHECK "Token distribution (period 1)" 
 
 # F.FWD 6 months to get in period 2 for tokens
@@ -97,7 +101,7 @@ truffle exec scripts/fastforward.js $(($(date +%s --date='6 months') - $(date +%
 # Tokens period 2
 TOKAVAIL[0]=$(truffle exec scripts/token-get-available.js 0 | tail -n 1)
 echo ${TOKTOTAL[0]} ${TOKAVAIL[0]}
-((${TOKAVAIL[0]} == 1416000))
+((${TOKAVAIL[0]} == 1512000))
 STEP_CHECK "Token distribution (period 2)" 
 
 # F.FWD 6 months to get in period 2 for tokens
@@ -112,7 +116,7 @@ STEP_CHECK "Ether distribution (period 2)"
 # Tokens period 3
 TOKAVAIL[0]=$(truffle exec scripts/token-get-available.js 0 | tail -n 1)
 echo ${TOKTOTAL[0]} ${TOKAVAIL[0]}
-((${TOKAVAIL[0]} == 1888000))
+((${TOKAVAIL[0]} == 2016000))
 STEP_CHECK "Token distribution (period 3)" 
 
 # F.FWD 6 months to get in period 2 for tokens
@@ -121,7 +125,7 @@ truffle exec scripts/fastforward.js $(($(date +%s --date='6 months') - $(date +%
 # Tokens period 4
 TOKAVAIL[0]=$(truffle exec scripts/token-get-available.js 0 | tail -n 1)
 echo ${TOKTOTAL[0]} ${TOKAVAIL[0]}
-((${TOKAVAIL[0]} == 2360000))
+((${TOKAVAIL[0]} == 2520000))
 STEP_CHECK "Token distribution (period 4)" 
 
 RESULT
