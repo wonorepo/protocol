@@ -78,7 +78,7 @@ contract EtherDistributor is Ownable {
     // ------------------------------------------------------------------------
     function distribute() public onlyOwner {
         l_Scenario.Scenario scenario = crowdsale.scenario();
-        uint totalCollectedEth = crowdsale.getTotalCollectedEth().sub(crowdsale.getSAFTEth());
+        uint totalCollectedEth = crowdsale.getTotalCollectedEth();
         for (uint8 purpose = 0; purpose < 6; ++purpose)
             for (uint8 period = 0; period < 3; ++period)
                 accounts[purpose][period].Amount = scheme[uint8(scenario)][purpose][period].mul(totalCollectedEth).div(1E8);
