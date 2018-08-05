@@ -180,50 +180,85 @@ contract Crowdsale is BasicCrowdsale {
     }
     
     // ------------------------------------------------------------------------
+    // Get tokens bought by address
+    // ------------------------------------------------------------------------
+    function getBought(address a) public view returns(uint) {
+        return participants[a].sold;
+    }
+
+    // ------------------------------------------------------------------------
     // Get tokens bought by sender
     // ------------------------------------------------------------------------
     function getBought() public view returns(uint) {
-        return participants[msg.sender].sold;
+        return getBought(msg.sender);
     }
-    
+
+    // ------------------------------------------------------------------------
+    // Get bonus amount for address
+    // ------------------------------------------------------------------------
+    function getBonus(address a) public view returns(uint) {
+        return participants[a].bonus;
+    }
+
     // ------------------------------------------------------------------------
     // Get bonus amount for sender
     // ------------------------------------------------------------------------
     function getBonus() public view returns(uint) {
-        return participants[msg.sender].bonus;
+        return getBonus(msg.sender);
     }
 
     // ------------------------------------------------------------------------
-    // Get bonus amount available to withdrawal for sender
+    // Get bonus amount available to withdrawal for address
     // ------------------------------------------------------------------------
-    function getBonusAvailable() public view returns(uint) {
+    function getBonusAvailable(address a) public view returns(uint) {
         uint available = 0;
         for (uint8 i = 0; i < 5; ++i)
             // Each 60 days
             if (block.timestamp >= endTimestamp.add(uint(86400).mul(60).mul(i)))
                 //add chunk equal to 15% of sold tokens
-                available.add(participants[msg.sender].sold.mul(15).div(100));
+                available.add(participants[a].sold.mul(15).div(100));
 
         // Limit to whole bonus bunch
-        if (available > participants[msg.sender].bonus)
-            available = participants[msg.sender].bonus;
+        if (available > participants[a].bonus)
+            available = participants[a].bonus;
 
         // Return value doesn't include claimed bonus
-        return available.sub(participants[msg.sender].claimed);
+        return available.sub(participants[a].claimed);
     }
     
     // ------------------------------------------------------------------------
-    // Get bonus amount still locked
+    // Get bonus amount available to withdrawal for sender
+    // ------------------------------------------------------------------------
+    function getBonusAvailable() public view returns(uint) {
+        return getBonusAvailable(msg.sender);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get bonus amount still locked for address
+    // ------------------------------------------------------------------------
+    function getBonusLocked(address a) public view returns(uint) {
+        return getBonus(a).sub(getBonusAvailable(a)).sub(getBonusClaimed(a));
+    }
+
+    // ------------------------------------------------------------------------
+    // Get bonus amount still locked for sender
     // ------------------------------------------------------------------------
     function getBonusLocked() public view returns(uint) {
-        return getBonus() - getBonusAvailable() - getBonusClaimed();
+        return getBonusLocked(msg.sender);
+    }
+
+    // ------------------------------------------------------------------------
+    // Get bonus amount already claimed by address
+    // ------------------------------------------------------------------------
+    function getBonusClaimed(address a) public view returns(uint) {
+        return participants[a].claimed;
     }
 
     // ------------------------------------------------------------------------
     // Get bonus amount already claimed by sender
     // ------------------------------------------------------------------------
     function getBonusClaimed() public view returns(uint) {
-        return participants[msg.sender].claimed;
+        return getBonusClaimed(msg.sender);
     }
 
     // ------------------------------------------------------------------------
