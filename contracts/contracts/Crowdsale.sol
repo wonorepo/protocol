@@ -274,7 +274,7 @@ contract Crowdsale is BasicCrowdsale {
     // Update actual ETH price
     // ------------------------------------------------------------------------
     function updateEtherPrice(uint usd) public onlyManager {
-        etherPrice = usd.mul(1 ether);
+        etherPrice = usd; // Actually USD * 1E+18
     }
     
     // ------------------------------------------------------------------------
