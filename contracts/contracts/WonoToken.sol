@@ -1,13 +1,12 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract WonoToken is ERC827Token, DetailedERC20, Ownable, MintableToken, BurnableToken  {
+contract WonoToken is DetailedERC20, Ownable, MintableToken, BurnableToken  {
     using SafeMath for uint;
 
     bool public transferUnlocked;
