@@ -121,7 +121,7 @@ contract Crowdsale is BasicCrowdsale {
 
         // Sell tokens with current price
         uint tokens = _value.div(price()).mul(1e18);
-        participants[_recipient].sold.add(tokens);
+        participants[_recipient].sold = participants[_recipient].sold.add(tokens);
         crowdsaleToken.give(_recipient, tokens);
 
         // Give bonus
@@ -132,7 +132,7 @@ contract Crowdsale is BasicCrowdsale {
             }
         }
         if (bonusTokens > 0) {
-            participants[_recipient].bonus.add(bonusTokens);
+            participants[_recipient].bonus = participants[_recipient].bonus.add(bonusTokens);
             crowdsaleToken.give(address(this), bonusTokens);
         }
 
@@ -187,24 +187,10 @@ contract Crowdsale is BasicCrowdsale {
     }
 
     // ------------------------------------------------------------------------
-    // Get tokens bought by sender
-    // ------------------------------------------------------------------------
-    function getBought() public view returns(uint) {
-        return getBought(msg.sender);
-    }
-
-    // ------------------------------------------------------------------------
     // Get bonus amount for address
     // ------------------------------------------------------------------------
     function getBonus(address a) public view returns(uint) {
         return participants[a].bonus;
-    }
-
-    // ------------------------------------------------------------------------
-    // Get bonus amount for sender
-    // ------------------------------------------------------------------------
-    function getBonus() public view returns(uint) {
-        return getBonus(msg.sender);
     }
 
     // ------------------------------------------------------------------------
@@ -216,7 +202,7 @@ contract Crowdsale is BasicCrowdsale {
             // Each 60 days
             if (block.timestamp >= endTimestamp.add(uint(86400).mul(60).mul(i)))
                 //add chunk equal to 15% of sold tokens
-                available.add(participants[a].sold.mul(15).div(100));
+                available = available.add(participants[a].sold.mul(15).div(100));
 
         // Limit to whole bonus bunch
         if (available > participants[a].bonus)
@@ -227,24 +213,10 @@ contract Crowdsale is BasicCrowdsale {
     }
     
     // ------------------------------------------------------------------------
-    // Get bonus amount available to withdrawal for sender
-    // ------------------------------------------------------------------------
-    function getBonusAvailable() public view returns(uint) {
-        return getBonusAvailable(msg.sender);
-    }
-
-    // ------------------------------------------------------------------------
     // Get bonus amount still locked for address
     // ------------------------------------------------------------------------
     function getBonusLocked(address a) public view returns(uint) {
         return getBonus(a).sub(getBonusAvailable(a)).sub(getBonusClaimed(a));
-    }
-
-    // ------------------------------------------------------------------------
-    // Get bonus amount still locked for sender
-    // ------------------------------------------------------------------------
-    function getBonusLocked() public view returns(uint) {
-        return getBonusLocked(msg.sender);
     }
 
     // ------------------------------------------------------------------------
@@ -255,17 +227,10 @@ contract Crowdsale is BasicCrowdsale {
     }
 
     // ------------------------------------------------------------------------
-    // Get bonus amount already claimed by sender
-    // ------------------------------------------------------------------------
-    function getBonusClaimed() public view returns(uint) {
-        return getBonusClaimed(msg.sender);
-    }
-
-    // ------------------------------------------------------------------------
     // Sends bonus
     // ------------------------------------------------------------------------
-    function claimBonus(uint _value) public returns(bool) {
-        require(getBonusAvailable() >= _value);
+    function claimBonus(uint _value) public {
+        require(getBonusAvailable(msg.sender) >= _value);
         participants[msg.sender].claimed = participants[msg.sender].claimed.add(_value);
         crowdsaleToken.transfer(msg.sender, _value);
     }
