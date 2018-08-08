@@ -1,3 +1,6 @@
 [submodule "externals/wings-integration"]
 	path = externals/wings-integration
 	url = ssh://git@github.com/froller/wings-integration
+[submodule "externals/wings-integration2"]
+	path = externals/wings-integration2
+	url = ssh://git@github.com/froller/wings-integration.git
