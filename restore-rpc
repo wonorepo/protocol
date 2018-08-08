@@ -2,14 +2,21 @@
 
 SNAPSHOT=$1
 
-if (-z "$SNAPSHOT")
+if [[ -z "$SNAPSHOT" ]]
 then
     echo "Bad or missing argument" > /dev/stderr
     exit 1
 fi
 
-rm -rf "${HOME}/.blockchain"
-pushd /
+SNAPSHOT_FILE=".blockchain-${SNAPSHOT}.tar"
+
+pushd "${HOME}"
+if [[ ! -r $SNAPSHOT_FILE ]]
+then
+    popd
+    echo "Snapshot $SNAPSHOT doesn't exist" > /dev/stderr
+    exit 1
+fi
+rm -f .blockchain
 tar -xvf "${HOME}/.blockchain-${SNAPSHOT}.tar"
 popd
-
