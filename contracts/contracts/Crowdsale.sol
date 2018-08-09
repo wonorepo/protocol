@@ -120,7 +120,7 @@ contract Crowdsale is BasicCrowdsale {
         }
 
         // Sell tokens with current price
-        uint tokens = _value.div(price()).mul(1e18);
+        uint tokens = _value.mul(1e18).div(price());
         participants[_recipient].sold = participants[_recipient].sold.add(tokens);
         crowdsaleToken.give(_recipient, tokens);
 
@@ -246,7 +246,7 @@ contract Crowdsale is BasicCrowdsale {
     // Calculates actual token price in ETH
     // ------------------------------------------------------------------------
     function price() internal view returns (uint) {
-        return basicPrice.div(etherPrice.div(1 ether));
+        return basicPrice.mul(1 ether).div(etherPrice);
     }
 
     // ------------------------------------------------------------------------
