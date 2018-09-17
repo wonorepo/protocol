@@ -24,7 +24,7 @@ echo -e "\e[33;1mending\e[0m"
 echo -e "\e[35;1mchecking\e[0m"
 
 # Check for right balance
-COLLECTED=$(truffle exec scripts/get-balance.js $CROWDSALE | tail -n 1)
+COLLECTED[0]=$(truffle exec scripts/get-balance.js $CROWDSALE | tail -n 1)
 SOLD[1]=$(truffle exec scripts/balance-of.js 1 | tail -n 1)
 SOLD[2]=$(truffle exec scripts/balance-of.js 2 | tail -n 1)
 SOLD[3]=$(truffle exec scripts/balance-of.js 3 | tail -n 1)
@@ -34,5 +34,7 @@ echo ${SOLD[1]} ${SOLD[2]} ${SOLD[3]} ${SOLD[4]}
 (  [[ "${SOLD[1]}" == "2000000" ]] && [[ "${SOLD[2]}" == "200000"     ]] \
 && [[ "${SOLD[3]}" == "0.2"     ]] && [[ "${SOLD[4]}" == "1460000.06" ]] )
 STEP_CHECK Sold
+
+COLLECTED[1]=$(truffle exec scripts/get
 
 RESULT

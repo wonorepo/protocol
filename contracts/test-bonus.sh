@@ -17,7 +17,8 @@ truffle exec scripts/add-to-whitelist.js 2
 truffle exec scripts/start-crowdsale.js $(($(date +%s) + 300)) $(date +%s --date='next week') 10
 truffle exec scripts/fastforward.js 3600
 truffle exec scripts/send-eth.js $CROWDSALE  1000 1
-truffle exec scripts/send-eth.js $CROWDSALE 20000 2
+truffle exec scripts/update-ether-price.js 500.5
+truffle exec scripts/send-eth.js $CROWDSALE 40000 2
 truffle exec scripts/fastforward.js $((86400 * 10))
 truffle exec scripts/release-tokens.js
 

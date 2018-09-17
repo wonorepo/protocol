@@ -8,7 +8,14 @@ contract BonusMeter {
     constructor (address crowdsaleAddress) public {
         crowdsale = Crowdsale(crowdsaleAddress);
     }
-    
+
+    // ------------------------------------------------------------------------
+    // Don't accept ETH
+    // ------------------------------------------------------------------------
+    function () public payable {
+        revert();
+    }
+
     function getBonusPercent () public view returns (uint) {
         uint totalCollected = crowdsale.totalCollected();
         

@@ -20,7 +20,9 @@ truffle exec scripts/set-token-distribution-address.js $TOKENDISTRIBUTOR
 truffle exec scripts/set-ether-distribution-address.js $ETHERDISTRIBUTOR
 truffle exec scripts/fastforward.js 3600
 echo "REG SAFT"
-truffle exec scripts/register-saft.js 9 1000
+truffle exec scripts/send-eth.js $CROWDSALE 8.5 1
+truffle exec scripts/register-saft.js 9 891.499
+truffle exec scripts/register-saft.js 9 100.001
 truffle exec scripts/send-eth.js $CROWDSALE 12000 1
 truffle exec scripts/fastforward.js $((86400 * 10))
 
