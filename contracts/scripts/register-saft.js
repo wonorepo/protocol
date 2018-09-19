@@ -15,7 +15,8 @@ module.exports = async function(callback) {
         
         const Crowdsale = artifacts.require("Crowdsale");
         const crowdsale = await Crowdsale.deployed();
-        crowdsale.registerSAFT(web3.toWei(amount), address).then((result) => { console.log(result); });
+        const etherPrice = await crowdsale.etherPrice();
+        crowdsale.registerSAFT(address, web3.toWei(amount), etherPrice).then((result) => { console.log(result); });
         callback();
     }
     catch(e) {

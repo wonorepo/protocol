@@ -15,14 +15,12 @@ truffle exec scripts/change-ownership.js
 truffle exec scripts/update-ether-price.js 1000
 truffle exec scripts/add-to-whitelist.js 1
 truffle exec scripts/add-to-whitelist.js 9
-truffle exec scripts/start-crowdsale.js $(($(date +%s) + 300)) $(date +%s --date='next week') 10
+truffle exec scripts/start-crowdsale.js $(($(date +%s) + 300)) $(date +%s --date='next week')
 truffle exec scripts/set-token-distribution-address.js $TOKENDISTRIBUTOR
 truffle exec scripts/set-ether-distribution-address.js $ETHERDISTRIBUTOR
 truffle exec scripts/fastforward.js 3600
 echo "REG SAFT"
-truffle exec scripts/send-eth.js $CROWDSALE 8.5 1
-truffle exec scripts/register-saft.js 9 891.499
-truffle exec scripts/register-saft.js 9 100.001
+truffle exec scripts/register-saft.js 9 1000
 truffle exec scripts/send-eth.js $CROWDSALE 12000 1
 truffle exec scripts/fastforward.js $((86400 * 10))
 

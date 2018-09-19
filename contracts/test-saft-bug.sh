@@ -31,8 +31,8 @@ echo $COLLECTED
 
 echo -e "\e[1mregister-saft 2 $(bc -l <<< "(1000000 - $COLLECTED) / 203") \e[0m"
 truffle exec scripts/register-saft.js 2 $(bc -l <<< "(1000000 - $COLLECTED) / 203")
-echo -e "\e[1mupdate-ether-price 1000 \e[0m"
-truffle exec scripts/update-ether-price.js 1000
+# echo -e "\e[1mupdate-ether-price 1000 \e[0m"
+# truffle exec scripts/update-ether-price.js 1000
 echo -e "\e[1mregister-saft 2 1 \e[0m"
 truffle exec scripts/register-saft.js 1 2
 
