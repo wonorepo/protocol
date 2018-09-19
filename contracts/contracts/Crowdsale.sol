@@ -61,7 +61,7 @@ contract Crowdsale is Ownable {
         uint claimed;
     }
 
-    mapping(address => Participant) participants; // list of participants
+    mapping(address => Participant) public participants; // list of participants
 
     // ========================================================================
     // Events
@@ -70,6 +70,7 @@ contract Crowdsale is Ownable {
     event CROWDSALE_START(uint startTimestamp, uint endTimestamp);
     event CROWDSALE_STOP();
     event CROWDSALE_FUND(address indexed backer, uint ethReceived, uint ethPrice);
+    event CROWDSALE_CHUNK(address indexed backer, uint chunSize, uint ethPrice);
     event CROWDSALE_SAFT(address indexed backer, uint usdReceived);
     event CROWDSALE_ETHER_PRICE(uint price);
     
@@ -224,6 +225,13 @@ contract Crowdsale is Ownable {
         etherDistributionAddress = a;
     }
     
+    // ------------------------------------------------------------------------
+    // Sets crowdsale end timestamp
+    // ------------------------------------------------------------------------
+    function setEndTimestamp(uint timestamp) public onlyStaff() notStopped() {
+        endTimestamp = timestamp;
+    }
+    
     // ========================================================================
     // Emergency procedures
     // ========================================================================
@@ -316,6 +324,7 @@ contract Crowdsale is Ownable {
                 leftToSell = _value.sub(chunk);
                 _value = chunk;
                 collected = _value.mul(_etherPrice.div(1e9)).div(1e9);   // Recalculate collected in USD in case of chunking
+                emit CROWDSALE_CHUNK(_recipient, chunk, _etherPrice);
             }
         }
 
@@ -348,10 +357,9 @@ contract Crowdsale is Ownable {
         if (leftToSell > 1e18) {
             log1(0xDEADBEEF, bytes32(leftToSell));
             return _value.add(sell(_recipient, leftToSell, _etherPrice));
-            //return _value;
         }
         else {
-            log1(0xBABECAFE, 0);
+            log1(0xBABECAFE, bytes32(leftToSell));
             return _value.add(leftToSell);
         }
     }
