@@ -73,6 +73,8 @@ contract Crowdsale is Ownable {
     event CROWDSALE_CHUNK(address indexed backer, uint chunSize, uint ethPrice);
     event CROWDSALE_SAFT(address indexed backer, uint usdReceived);
     event CROWDSALE_ETHER_PRICE(uint price);
+    event CROWDSALE_BONUS_GIVEN(address indexed backer, uint tokens, uint bonus);
+    event CROWDSALE_BONUS_CLAIMED(address indexed backer, uint amount);
     
     // ========================================================================
     // Modifiers
@@ -283,11 +285,7 @@ contract Crowdsale is Ownable {
     // ------------------------------------------------------------------------
     function () public payable {
         require(msg.value > 0);
-        //sell(msg.sender, msg.value, etherPrice);
-        uint _value = msg.value;
-        do {
-          _value = _value.sub(sell(msg.sender, _value, etherPrice));
-        } while (_value > 1e18);
+        sell(msg.sender, msg.value, etherPrice);
         totalCollectedEth = totalCollectedEth.add(msg.value);
         emit CROWDSALE_FUND(msg.sender, msg.value, etherPrice);
     }
@@ -296,10 +294,8 @@ contract Crowdsale is Ownable {
     // Register SAFT
     // ------------------------------------------------------------------------
     function registerSAFT(address _recipient, uint _value, uint _etherPrice) public onlyStaff() {
+        sell(_recipient, _value, _etherPrice);
         saftEth = saftEth.add(_value);
-        do {
-          _value = _value.sub(sell(_recipient, _value, _etherPrice));
-        } while (_value > 1e18);
         emit CROWDSALE_SAFT(_recipient, _value);
     }
     
@@ -327,6 +323,9 @@ contract Crowdsale is Ownable {
         for (uint8 i = 0; i < 5 && leftToSell == 0; ++i) {  // Stop iterating if any single price range boundary hit
             if (totalCollected < priceRange[i] && priceRange[i] <= totalCollected.add(collected)) {
                 uint chunk = (priceRange[i].sub(totalCollected)).mul(1e9).div(_etherPrice.div(1e9));  // Chunk in ETH
+                if (chunk == 0) { // Wiping dust
+                    totalCollected = priceRange[i];
+                }
                 leftToSell = _value.sub(chunk);
                 _value = chunk;
                 collected = _value.mul(_etherPrice.div(1e9)).div(1e9);   // Recalculate collected in USD in case of chunking
@@ -349,6 +348,7 @@ contract Crowdsale is Ownable {
         if (bonusTokens > 0) {
             participants[_recipient].bonus = participants[_recipient].bonus.add(bonusTokens);
             crowdsaleToken.give(address(this), bonusTokens);
+            emit CROWDSALE_BONUS_GIVEN(_recipient, tokens, bonusTokens);
         }
 
         // Update counters
@@ -360,7 +360,6 @@ contract Crowdsale is Ownable {
         updateScenario();
 
         // Sell rest amount with another price
-        /*
         if (leftToSell > 0) {
             log1(0xDEADBEEF, bytes32(leftToSell));
             return _value.add(sell(_recipient, leftToSell, _etherPrice));
@@ -369,8 +368,6 @@ contract Crowdsale is Ownable {
             log1(0xBABECAFE, bytes32(leftToSell));
             return _value.add(leftToSell);
         }
-        */
-        return _value;
     }
     
     // ------------------------------------------------------------------------
@@ -474,6 +471,7 @@ contract Crowdsale is Ownable {
         require(getBonusAvailable(msg.sender) >= _value);
         participants[msg.sender].claimed = participants[msg.sender].claimed.add(_value);
         crowdsaleToken.transfer(msg.sender, _value);
+        emit CROWDSALE_BONUS_CLAIMED(msg.sender, _value);
     }
 
     // ========================================================================
@@ -533,6 +531,10 @@ contract Crowdsale is Ownable {
         // Passing tokens for distribution
         crowdsaleToken.give(tokenDistributionAddress, tokens);
     }
+
+    // ========================================================================
+    // Various state updaters/reporters
+    // ========================================================================  
     
     // ------------------------------------------------------------------------
     // Updates token distribution scenario
@@ -549,6 +551,26 @@ contract Crowdsale is Ownable {
         else
             scenario = l_Scenario.Scenario.ScrewUp;
     }
-    
-
+        
+    // ------------------------------------------------------------------------
+    // Returns current bonus percent
+    // ------------------------------------------------------------------------
+    function getBonusPercent () public view returns (uint) {
+        if (totalCollected <= 1e24) {
+            return 70;
+        }
+        else if (totalCollected <= 4e24) {
+            return 30;
+        }
+        else if (totalCollected <= 8e24) {
+            return 25;
+        }
+        else if (totalCollected <= 9e24) {
+            return 10;
+        }
+        else if (totalCollected <= 10e14) {
+            return 5;
+        }
+        return 0;
+    }
 }
